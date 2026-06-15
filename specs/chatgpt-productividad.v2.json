@@ -1,0 +1,340 @@
+{
+  "schema_version": 2,
+  "video": {
+    "client": "Ciberaula",
+    "course_category": "Productividad en la empresa con ChatGPT",
+    "course_url": "",
+    "language": "es-ES",
+    "version": "A",
+    "purpose": "conversion",
+    "aspect_ratio": "16:9",
+    "estimated_seconds": 71
+  },
+  "characters": {
+    "sofia": {
+      "id": "sofia",
+      "name": "Sofía",
+      "gender": "female",
+      "age_range": "36",
+      "wardrobe": "tailored light grey single-button blazer over a white blouse, navy trousers, a delicate thin gold necklace, small gold stud earrings"
+    },
+    "marcos": {
+      "id": "marcos",
+      "name": "Marcos",
+      "gender": "male",
+      "age_range": "44",
+      "wardrobe": "structured charcoal grey wool blazer over a light blue tailored dress shirt, no tie, discreet silver watch"
+    }
+  },
+  "zones": {},
+  "base_images": {
+    "IMG_1": {
+      "character": "sofia",
+      "zone": "ZONE_1",
+      "framing": "medium close-up",
+      "used_in_scenes": [
+        1,
+        5
+      ]
+    },
+    "IMG_2": {
+      "character": "marcos",
+      "zone": "ZONE_2",
+      "framing": "medium shot",
+      "used_in_scenes": [
+        2,
+        7
+      ]
+    },
+    "IMG_3": {
+      "character": "sofia",
+      "zone": "ZONE_13",
+      "framing": "medium shot",
+      "used_in_scenes": [
+        3,
+        9
+      ]
+    },
+    "IMG_4": {
+      "character": "marcos",
+      "zone": "ZONE_6",
+      "framing": "medium shot waist-up, standing upright at a high table, eye level, correct human scale; brushed steel high stools only at hip height, softly blurred to the side",
+      "used_in_scenes": [
+        4,
+        8
+      ]
+    },
+    "IMG_5": {
+      "character": "sofia",
+      "zone": "ZONE_4",
+      "framing": "medium close-up",
+      "used_in_scenes": [
+        6,
+        11
+      ]
+    },
+    "IMG_6": {
+      "character": "marcos",
+      "zone": "ZONE_14",
+      "framing": "medium shot",
+      "used_in_scenes": [
+        10
+      ]
+    },
+    "IMG_7": {
+      "character": "sofia",
+      "zone": "ZONE_15",
+      "framing": "medium close-up",
+      "used_in_scenes": [
+        12
+      ]
+    }
+  },
+  "scenes": [
+    {
+      "id": 1,
+      "base_image": "IMG_1",
+      "dialogue": "¿Y si pudieras terminar a las tres lo que hoy te lleva hasta las seis?",
+      "tone": "intrigante",
+      "emphasis_words": [
+        "tres",
+        "seis"
+      ],
+      "motion_prompt": "head tilt with raised eyebrow, confident curiosity",
+      "expressiveness": "high",
+      "estimated_seconds": 5,
+      "transition_in": "cut",
+      "transition_out": "cut",
+      "overlays": [
+        {
+          "type": "lower_third",
+          "content": "Productividad con ChatGPT",
+          "position": "lower_left",
+          "start": 1,
+          "end": 5
+        }
+      ],
+      "persistent_overlays": []
+    },
+    {
+      "id": 2,
+      "base_image": "IMG_2",
+      "dialogue": "ChatGPT ya no es el futuro: es la herramienta que hoy marca la diferencia en cada empresa.",
+      "tone": "afirmativo",
+      "emphasis_words": [
+        "hoy",
+        "diferencia"
+      ],
+      "motion_prompt": "open hand gesture forward, assertive conviction",
+      "expressiveness": "medium",
+      "estimated_seconds": 6,
+      "transition_in": "cut",
+      "transition_out": "cut",
+      "overlays": [],
+      "persistent_overlays": []
+    },
+    {
+      "id": 3,
+      "base_image": "IMG_3",
+      "dialogue": "Empresas como BBVA y Telefónica ya lo usan en marketing, recursos humanos y atención al cliente.",
+      "tone": "creíble",
+      "emphasis_words": [
+        "BBVA",
+        "Telefónica"
+      ],
+      "motion_prompt": "hand sweep across, presenting evidence calmly",
+      "expressiveness": "medium",
+      "estimated_seconds": 6,
+      "transition_in": "cut",
+      "transition_out": "cut",
+      "overlays": [
+        {
+          "type": "lower_third",
+          "content": "Casos reales de empresa",
+          "position": "lower_left",
+          "start": 0.5,
+          "end": 6
+        }
+      ],
+      "persistent_overlays": []
+    },
+    {
+      "id": 4,
+      "base_image": "IMG_4",
+      "dialogue": "Imagina automatizar correos, informes, actas y propuestas en una fracción del tiempo.",
+      "tone": "motivador",
+      "emphasis_words": [
+        "automatizar",
+        "tiempo"
+      ],
+      "motion_prompt": "counting on fingers, energetic enthusiasm",
+      "expressiveness": "high",
+      "estimated_seconds": 6,
+      "transition_in": "cut",
+      "transition_out": "cut",
+      "overlays": [],
+      "persistent_overlays": []
+    },
+    {
+      "id": 5,
+      "base_image": "IMG_1",
+      "dialogue": "Presentaciones efectivas y análisis de datos que antes te robaban horas, ahora en minutos.",
+      "tone": "motivador",
+      "emphasis_words": [
+        "horas",
+        "minutos"
+      ],
+      "motion_prompt": "hands contrast wide then narrow, dynamic emphasis",
+      "expressiveness": "high",
+      "estimated_seconds": 6,
+      "transition_in": "cut",
+      "transition_out": "cut",
+      "overlays": [],
+      "persistent_overlays": []
+    },
+    {
+      "id": 6,
+      "base_image": "IMG_5",
+      "dialogue": "En Ciberaula no te damos teoría: aprendes con ejemplos prácticos y reales.",
+      "tone": "cercano",
+      "emphasis_words": [
+        "prácticos",
+        "reales"
+      ],
+      "motion_prompt": "hand to chest then open out, sincere warmth",
+      "expressiveness": "medium",
+      "estimated_seconds": 5,
+      "transition_in": "cut",
+      "transition_out": "cut",
+      "overlays": [
+        {
+          "type": "lower_third",
+          "content": "Aprendizaje 100% práctico",
+          "position": "lower_left",
+          "start": 0.5,
+          "end": 5
+        }
+      ],
+      "persistent_overlays": []
+    },
+    {
+      "id": 7,
+      "base_image": "IMG_2",
+      "dialogue": "Configurarás ChatGPT para generar informes, actas y propuestas comerciales a tu medida.",
+      "tone": "didáctico",
+      "emphasis_words": [
+        "informes",
+        "propuestas"
+      ],
+      "motion_prompt": "precise hand gestures, focused clarity",
+      "expressiveness": "medium",
+      "estimated_seconds": 6,
+      "transition_in": "cut",
+      "transition_out": "cut",
+      "overlays": [],
+      "persistent_overlays": []
+    },
+    {
+      "id": 8,
+      "base_image": "IMG_4",
+      "dialogue": "Mejorarás la comunicación de tu equipo: respuestas rápidas, ideas creativas y mensajes claros.",
+      "tone": "afirmativo",
+      "emphasis_words": [
+        "rápidas",
+        "claros"
+      ],
+      "motion_prompt": "rhythmic hand beats, persuasive energy",
+      "expressiveness": "medium",
+      "estimated_seconds": 6,
+      "transition_in": "cut",
+      "transition_out": "cut",
+      "overlays": [],
+      "persistent_overlays": []
+    },
+    {
+      "id": 9,
+      "base_image": "IMG_3",
+      "dialogue": "Y en atención al cliente, respuestas personalizadas que disparan la satisfacción de tus usuarios.",
+      "tone": "convincente",
+      "emphasis_words": [
+        "personalizadas",
+        "satisfacción"
+      ],
+      "motion_prompt": "hand opens upward, optimistic momentum",
+      "expressiveness": "medium",
+      "estimated_seconds": 6,
+      "transition_in": "cut",
+      "transition_out": "cut",
+      "overlays": [],
+      "persistent_overlays": []
+    },
+    {
+      "id": 10,
+      "base_image": "IMG_6",
+      "dialogue": "Quien domina ChatGPT ahorra tiempo y lidera la transformación digital de su empresa.",
+      "tone": "inspirador",
+      "emphasis_words": [
+        "lidera",
+        "transformación"
+      ],
+      "motion_prompt": "firm forward lean, determined confidence",
+      "expressiveness": "high",
+      "estimated_seconds": 6,
+      "transition_in": "cut",
+      "transition_out": "cut",
+      "overlays": [],
+      "persistent_overlays": []
+    },
+    {
+      "id": 11,
+      "base_image": "IMG_5",
+      "dialogue": "La pregunta es sencilla: ¿lideras tú el cambio o lo hace tu competencia?",
+      "tone": "urgente",
+      "emphasis_words": [
+        "lideras",
+        "competencia"
+      ],
+      "motion_prompt": "pointed gesture toward camera, challenging intensity",
+      "expressiveness": "high",
+      "estimated_seconds": 5,
+      "transition_in": "cut",
+      "transition_out": "cut",
+      "overlays": [
+        {
+          "type": "lower_third",
+          "content": "Plazas limitadas",
+          "position": "lower_right",
+          "start": 0.5,
+          "end": 5
+        }
+      ],
+      "persistent_overlays": []
+    },
+    {
+      "id": 12,
+      "base_image": "IMG_7",
+      "dialogue": "Apúntate hoy en Ciberaula al curso de Productividad con ChatGPT y empieza a liderar.",
+      "tone": "cierre enérgico",
+      "emphasis_words": [
+        "hoy",
+        "Ciberaula"
+      ],
+      "motion_prompt": "inviting open arms, warm decisive smile energy",
+      "expressiveness": "high",
+      "estimated_seconds": 6,
+      "transition_in": "cut",
+      "transition_out": "fade",
+      "overlays": [
+        {
+          "type": "cta",
+          "content": "Inscríbete en Ciberaula",
+          "position": "lower_center",
+          "start": 1,
+          "end": 6
+        }
+      ],
+      "persistent_overlays": []
+    }
+  ],
+  "brand_assets": {}
+}

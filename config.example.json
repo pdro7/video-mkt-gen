@@ -1,0 +1,49 @@
+{
+  "client": "Ciberaula",
+  "zonesPath": "zones.json",
+  "providers": {
+    "llm": "claude",
+    "voice": "heygen",
+    "video": "heygen",
+    "image": "none"
+  },
+  "llm": {
+    "model": "claude-opus-4-8",
+    "maxTokens": 8000
+  },
+  "image": {
+    "model": "gemini-3-pro-image-preview",
+    "resolution": "2K"
+  },
+  "video": {
+    "aspectRatio": "16:9",
+    "resolution": "1080p",
+    "useAvatarIV": true,
+    "defaultExpressiveness": "high"
+  },
+  "constraints": {
+    "minScenes": 10,
+    "maxScenes": 14,
+    "wordsPerSecond": 2.5
+  },
+  "characters": [
+    {
+      "id": "elena",
+      "name": "Elena",
+      "gender": "female",
+      "ageRange": "38",
+      "wardrobe": "structured tailored navy blue blazer over a crisp white silk blouse, minimalist silver stud earrings",
+      "referenceImagePath": "Avatars/elena.png",
+      "heygenVoiceId": "REPLACE_WITH_HEYGEN_VOICE_ID_ELENA"
+    },
+    {
+      "id": "marcos",
+      "name": "Marcos",
+      "gender": "male",
+      "ageRange": "44",
+      "wardrobe": "structured charcoal grey wool blazer over a light blue tailored dress shirt, no tie, discreet silver watch",
+      "referenceImagePath": "Avatars/marcos.png",
+      "heygenVoiceId": "REPLACE_WITH_HEYGEN_VOICE_ID_MARCOS"
+    }
+  ]
+}

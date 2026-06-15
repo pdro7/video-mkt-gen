@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Comparador — Video ChatGPT (3 versiones)</title>
+  <style>
+    :root { --bg:#0f1115; --panel:#171a21; --fg:#e7e9ee; --mut:#9aa3b2; --accent:#4f8cff; --line:#272b35; }
+    * { box-sizing: border-box; }
+    body { margin:0; background:var(--bg); color:var(--fg); font:14px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; }
+    header { padding:14px 18px; border-bottom:1px solid var(--line); }
+    header h1 { margin:0; font-size:16px; font-weight:600; }
+    header p { margin:4px 0 0; color:var(--mut); font-size:12px; }
+    .grid { display:flex; gap:10px; padding:14px; align-items:flex-start; flex-wrap:wrap; }
+    .col { flex:1 1 0; min-width:280px; background:var(--panel); border:1px solid var(--line); border-radius:10px; overflow:hidden; }
+    .col .label { display:flex; justify-content:space-between; align-items:center; padding:8px 10px; font-size:12px; border-bottom:1px solid var(--line); }
+    .col .label .tag { color:var(--mut); }
+    .col video { width:100%; display:block; background:#000; }
+    .audio-btn { background:transparent; border:1px solid var(--line); color:var(--fg); border-radius:6px; padding:2px 8px; cursor:pointer; font-size:12px; }
+    .audio-btn.on { border-color:var(--accent); color:var(--accent); }
+    .controls { position:sticky; bottom:0; background:var(--panel); border-top:1px solid var(--line); padding:12px 16px; display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+    button.ctrl { background:#222734; border:1px solid var(--line); color:var(--fg); border-radius:8px; padding:8px 12px; cursor:pointer; font-size:14px; }
+    button.ctrl:hover { border-color:var(--accent); }
+    button.primary { background:var(--accent); border-color:var(--accent); color:#fff; font-weight:600; }
+    #scrub { flex:1 1 320px; min-width:200px; accent-color:var(--accent); }
+    .mono { font-variant-numeric:tabular-nums; color:var(--mut); white-space:nowrap; }
+    kbd { background:#222734; border:1px solid var(--line); border-radius:4px; padding:1px 6px; font-size:11px; color:var(--mut); }
+    .hint { color:var(--mut); font-size:12px; padding:0 16px 14px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Comparador — Video ChatGPT · 3 versiones sincronizadas</h1>
+    <p>25 fps · 1 frame = 0.04s · Sofía protagonista + Marcos. Audio silenciado por defecto (puedes activar uno).</p>
+  </header>
+
+  <div class="grid" id="grid">
+    <div class="col">
+      <div class="label"><strong>high + motion</strong><button class="audio-btn" data-i="0">🔇 audio</button></div>
+      <video data-i="0" src="v1-high-motion.mp4" preload="auto" muted playsinline></video>
+    </div>
+    <div class="col">
+      <div class="label"><strong>sin motion · high</strong><button class="audio-btn" data-i="1">🔇 audio</button></div>
+      <video data-i="1" src="v2-nomotion-high.mp4" preload="auto" muted playsinline></video>
+    </div>
+    <div class="col">
+      <div class="label"><strong>sin motion · medium</strong><button class="audio-btn" data-i="2">🔇 audio</button></div>
+      <video data-i="2" src="v3-nomotion-medium.mp4" preload="auto" muted playsinline></video>
+    </div>
+  </div>
+
+  <div class="hint">
+    Atajos: <kbd>Espacio</kbd> play/pausa · <kbd>←</kbd>/<kbd>→</kbd> frame anterior/siguiente · <kbd>Shift</kbd>+<kbd>←/→</kbd> saltar 1s · <kbd>Home</kbd> al inicio
+  </div>
+
+  <div class="controls">
+    <button class="ctrl primary" id="playpause">▶ Play</button>
+    <button class="ctrl" id="back">◀ Frame</button>
+    <button class="ctrl" id="fwd">Frame ▶</button>
+    <input type="range" id="scrub" min="0" max="1000" value="0" step="1" />
+    <span class="mono" id="readout">00:00.00 · frame 0 / 0</span>
+  </div>
+
+  <script>
+    const FPS = 25;
+    const FRAME = 1 / FPS;
+    const vids = Array.from(document.querySelectorAll('video'));
+    const playpause = document.getElementById('playpause');
+    const scrub = document.getElementById('scrub');
+    const readout = document.getElementById('readout');
+    let duration = 0;
+
+    // El primer video (con más motion) es el "maestro" para el tiempo de referencia.
+    const master = vids[0];
+
+    function ready() {
+      duration = Math.max(...vids.map(v => v.duration || 0));
+      render();
+    }
+    let readyCount = 0;
+    vids.forEach(v => v.addEventListener('loadedmetadata', () => { if (++readyCount === vids.length) ready(); }));
+
+    function isPlaying() { return !master.paused && !master.ended; }
+
+    function syncTo(t) {
+      const clamped = Math.min(Math.max(0, t), duration || t);
+      vids.forEach(v => { if (Math.abs(v.currentTime - clamped) > 0.001) v.currentTime = clamped; });
+      render(clamped);
+    }
+
+    function play() { vids.forEach(v => v.play()); playpause.textContent = '⏸ Pause'; }
+    function pause() { vids.forEach(v => v.pause()); playpause.textContent = '▶ Play'; }
+    function toggle() { isPlaying() ? pause() : play(); }
+
+    function step(frames) {
+      pause();
+      syncTo((master.currentTime || 0) + frames * FRAME);
+    }
+
+    function fmt(t) {
+      const m = Math.floor(t / 60);
+      const s = (t % 60);
+      return String(m).padStart(2,'0') + ':' + s.toFixed(2).padStart(5,'0');
+    }
+
+    function render(t) {
+      const cur = (t != null ? t : master.currentTime) || 0;
+      if (duration > 0) scrub.value = Math.round((cur / duration) * 1000);
+      const frame = Math.round(cur * FPS);
+      const total = Math.round((duration || 0) * FPS);
+      readout.textContent = fmt(cur) + ' · frame ' + frame + ' / ' + total;
+    }
+
+    // Mantener el readout/scrubber vivo durante la reproducción.
+    function tick() { if (isPlaying()) render(); requestAnimationFrame(tick); }
+    requestAnimationFrame(tick);
+
+    // Re-sincroniza si algún video se desfasa al reproducir.
+    master.addEventListener('timeupdate', () => {
+      if (!isPlaying()) return;
+      vids.forEach(v => { if (v !== master && Math.abs(v.currentTime - master.currentTime) > 0.08) v.currentTime = master.currentTime; });
+    });
+    vids.forEach(v => v.addEventListener('ended', pause));
+
+    playpause.onclick = toggle;
+    document.getElementById('back').onclick = () => step(-1);
+    document.getElementById('fwd').onclick = () => step(1);
+    scrub.oninput = () => { pause(); syncTo((scrub.value / 1000) * duration); };
+
+    // Audio: solo uno activo a la vez.
+    document.querySelectorAll('.audio-btn').forEach(btn => {
+      btn.onclick = () => {
+        const i = +btn.dataset.i;
+        const turnOn = vids[i].muted;
+        vids.forEach((v, j) => { v.muted = !(turnOn && j === i); });
+        document.querySelectorAll('.audio-btn').forEach((b, j) => {
+          const on = (turnOn && j === i);
+          b.classList.toggle('on', on);
+          b.textContent = (on ? '🔊' : '🔇') + ' audio';
+        });
+      };
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') { e.preventDefault(); toggle(); }
+      else if (e.code === 'ArrowLeft') { e.preventDefault(); e.shiftKey ? step(-FPS) : step(-1); }
+      else if (e.code === 'ArrowRight') { e.preventDefault(); e.shiftKey ? step(FPS) : step(1); }
+      else if (e.code === 'Home') { e.preventDefault(); pause(); syncTo(0); }
+    });
+  </script>
+</body>
+</html>

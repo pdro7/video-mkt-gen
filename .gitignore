@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.env
+config.json
+output/
+*.log
+.DS_Store
+
+# Media y previews generados (no versionar binarios pesados)
+*.mp4
+chatgpt-previews/
+zone-previews/

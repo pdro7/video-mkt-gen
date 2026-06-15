@@ -1,0 +1,18 @@
+{
+  "course_category": "Inteligencia Artificial para Marketing",
+  "course_url": "https://www.ciberaula.com/cursos/inteligencia-artificial-para-marketing",
+  "purpose": "conversion",
+  "language": "es-ES",
+  "version": "B",
+  "current_transcript": "PEGA AQUÍ EL TRANSCRIPT DEL VIDEO ACTUAL DE ESTA CATEGORÍA. Claude lo reescribirá para hacerlo más vendedor (gancho, beneficios, prueba social, urgencia, CTA) sin inventar datos, y lo estructurará en escenas.",
+  "key_message": "El marketing con IA ya es el estándar; quien no lo domina pierde frente a su competencia. Ciberaula lo enseña y el curso es 100% bonificable por Fundae.",
+  "talking_points": [
+    "El 63% de los profesionales de marketing en España ya usa IA y la cifra crece cada mes",
+    "Se aprende a automatizar campañas, escribir copy que convierte, posicionar en buscadores y crear vídeos en minutos",
+    "100% bonificable por Fundae, sin coste para el trabajador; Ciberaula gestiona el papeleo",
+    "Ciberaula forma profesionales desde 1996",
+    "CTA: solicitar plaza en ciberaula.com antes de que cierre la convocatoria"
+  ],
+  "character_ids": ["sofia", "marcos"],
+  "protagonist": "sofia"
+}

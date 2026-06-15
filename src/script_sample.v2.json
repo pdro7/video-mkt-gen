@@ -1,0 +1,557 @@
+{
+  "schema_version": 2,
+  "video": {
+    "client": "Ciberaula",
+    "course_category": "Inteligencia Artificial para Marketing",
+    "course_url": "https://www.ciberaula.com/cursos/inteligencia-artificial-para-marketing",
+    "language": "es-ES",
+    "version": "B",
+    "purpose": "conversion",
+    "aspect_ratio": "16:9",
+    "estimated_seconds": 54
+  },
+  "characters": {
+    "elena": {
+      "id": "char_elena",
+      "name": "Elena",
+      "gender": "female",
+      "age_range": "38",
+      "wardrobe": "structured tailored navy blue blazer with sharp lapels over a crisp white silk blouse buttoned to the collar, small minimalist silver stud earrings"
+    },
+    "marcos": {
+      "id": "char_marcos",
+      "name": "Marcos",
+      "gender": "male",
+      "age_range": "44",
+      "wardrobe": "structured charcoal grey wool blazer over a light blue tailored dress shirt with crisp visible collar, no tie, discreet silver watch on left wrist"
+    }
+  },
+  "zones": {
+    "ZONE_1": "open-plan workspace with rows of clean modern desks, large monitors, ergonomic chairs, blurred team members working in deep background",
+    "ZONE_2": "glass-walled meeting room with long light oak table, leather chairs, open-plan workspace visible through glass walls in soft blur",
+    "ZONE_3": "casual breakout seating area with low beige sofa, low oak coffee table, large indoor monstera plant, warm pendant light overhead",
+    "ZONE_4": "floor-to-ceiling window corridor overlooking softly blurred urban skyline with subtle daylight haze, polished concrete floor",
+    "ZONE_5": "enclosed executive office with light oak wood paneling on back wall, single leather armchair in deep blur, discreet shelf with books and small plant",
+    "ZONE_6": "standing high-table area near a window with brushed steel high stools and exposed industrial ceiling structure",
+    "ZONE_7": "reception lobby with polished concrete feature wall in deep background where subtle CIBERAULA brushed steel lettering is visible, large healthy indoor plant",
+    "ZONE_8": "modern training classroom with rows of empty modern chairs in soft blur, large interactive screen on back wall switched off, warm wood accents"
+  },
+  "base_images": {
+    "IMG_1": {
+      "character": "elena",
+      "zone": "ZONE_4",
+      "framing": "medium close-up, mid-chest upward, frontal pose (0 degrees), centered",
+      "used_in_scenes": [
+        1,
+        2,
+        9
+      ]
+    },
+    "IMG_2": {
+      "character": "marcos",
+      "zone": "ZONE_3",
+      "framing": "medium shot, seated on edge of sofa, body angled 5 degrees right",
+      "used_in_scenes": [
+        3,
+        4
+      ]
+    },
+    "IMG_3": {
+      "character": "elena",
+      "zone": "ZONE_2",
+      "framing": "medium shot waist-up, body angled 5 degrees, right hand with 1 finger extended",
+      "used_in_scenes": [
+        5
+      ]
+    },
+    "IMG_4": {
+      "character": "elena",
+      "zone": "ZONE_1",
+      "framing": "medium shot waist-up, body angled 5 degrees, right hand with 2 fingers extended",
+      "used_in_scenes": [
+        6
+      ]
+    },
+    "IMG_5": {
+      "character": "elena",
+      "zone": "ZONE_6",
+      "framing": "medium close-up chest-up, body angled 5 degrees, right hand with 3 fingers extended, left hand resting on high table edge",
+      "used_in_scenes": [
+        7
+      ]
+    },
+    "IMG_6": {
+      "character": "elena",
+      "zone": "ZONE_8",
+      "framing": "medium shot waist-up, body angled 5 degrees, both hands out of frame",
+      "used_in_scenes": [
+        8
+      ]
+    },
+    "IMG_7": {
+      "character": "marcos",
+      "zone": "ZONE_5",
+      "framing": "medium shot chest-up, seated behind desk, body angled 5 degrees right",
+      "used_in_scenes": [
+        10,
+        11,
+        12
+      ]
+    },
+    "IMG_8": {
+      "character": "elena",
+      "zone": "ZONE_7",
+      "framing": "medium close-up chest-up, body angled 5 degrees, centered, branded concrete wall behind",
+      "used_in_scenes": [
+        13,
+        14
+      ]
+    }
+  },
+  "scenes": [
+    {
+      "id": 1,
+      "base_image": "IMG_1",
+      "dialogue": "El sesenta y tres por ciento de los profesionales de marketing en España ya usa inteligencia artificial.",
+      "tone": "authoritative, revelatory",
+      "emphasis_words": [
+        "sesenta y tres por ciento"
+      ],
+      "motion_prompt": "Confident frontal stance, eyes locked on camera throughout, subtle authoritative micro-nod at the end of the sentence, calm closed-mouth professional smile maintained, minimal head movement, no hand gestures.",
+      "estimated_seconds": 4,
+      "transition_in": "cold_open",
+      "transition_out": "cut",
+      "overlays": [
+        {
+          "type": "big_number",
+          "content": "63%",
+          "position": "behind_subject_centered",
+          "start": 0.2,
+          "end": 4,
+          "style": {
+            "size": "60%_frame_height",
+            "animation": "count_up_0_to_63_in_600ms",
+            "color": "ciberaula_blue",
+            "blur_radius": "2px",
+            "opacity": 0.9
+          }
+        }
+      ],
+      "persistent_overlays": [
+        "logo_ciberaula_corner"
+      ]
+    },
+    {
+      "id": 2,
+      "base_image": "IMG_1",
+      "dialogue": "Y la cifra crece cada mes.",
+      "tone": "reinforcing",
+      "emphasis_words": [
+        "cada mes"
+      ],
+      "motion_prompt": "Same frontal stance, subtle emphatic nod on the final phrase, neutral brows, eyes steady on camera, closed-mouth confident expression.",
+      "estimated_seconds": 4,
+      "transition_in": "cut",
+      "transition_out": "whip_cut_6_frames",
+      "camera_movement": {
+        "type": "push_in",
+        "start_scale": 1.02,
+        "end_scale": 1.05,
+        "duration": 4
+      },
+      "overlays": [
+        {
+          "type": "small_number_corner",
+          "content": "63%",
+          "position": "top_right",
+          "style": {
+            "size": "15%_frame_height",
+            "animation": "scale_from_60_to_15_in_400ms",
+            "color": "ciberaula_blue"
+          }
+        },
+        {
+          "type": "arrow_icon",
+          "content": "↗",
+          "position": "next_to_small_number",
+          "style": {
+            "animation": "fade_in_at_4.5s"
+          }
+        }
+      ],
+      "persistent_overlays": [
+        "logo_ciberaula_corner"
+      ]
+    },
+    {
+      "id": 3,
+      "base_image": "IMG_2",
+      "dialogue": "Si tú aún no la dominas, el riesgo no es perder oportunidades.",
+      "tone": "close, grave warning",
+      "emphasis_words": [
+        "el riesgo"
+      ],
+      "motion_prompt": "Slight forward lean of the torso, subtly furrowed brow with warm grave expression, no smile, eyes steady on camera with intent gaze, no hand gestures.",
+      "estimated_seconds": 4,
+      "transition_in": "cut",
+      "transition_out": "cut",
+      "overlays": [],
+      "persistent_overlays": [
+        "logo_ciberaula_corner"
+      ]
+    },
+    {
+      "id": 4,
+      "base_image": "IMG_2",
+      "dialogue": "Es que te las quiten.",
+      "tone": "understated warning, punctuated",
+      "emphasis_words": [
+        "te las quiten"
+      ],
+      "motion_prompt": "Tight reframe, head slightly tilted forward by 3 degrees, eyes locked directly into camera lens with fixed intent gaze, brows lifted slightly on delivery, jaw firm, closed-mouth, no smile.",
+      "estimated_seconds": 3,
+      "transition_in": "cut",
+      "transition_out": "whip_cut_6_frames",
+      "camera_movement": {
+        "type": "crop_zoom",
+        "scale": 1.2,
+        "anchor": "center"
+      },
+      "overlays": [
+        {
+          "type": "underline_animation",
+          "position": "below_subtitle_area",
+          "start": 0.5,
+          "style": {
+            "content_target": "te las quiten",
+            "color": "orange_coral",
+            "animation": "draw_left_to_right_in_400ms"
+          }
+        }
+      ],
+      "persistent_overlays": [
+        "logo_ciberaula_corner"
+      ]
+    },
+    {
+      "id": 5,
+      "base_image": "IMG_3",
+      "dialogue": "En Ciberaula aprenderás a automatizar campañas",
+      "tone": "confident professional, brisk",
+      "emphasis_words": [
+        "Ciberaula",
+        "automatizar campañas"
+      ],
+      "motion_prompt": "Right hand with index finger extended rises subtly to chest height as she emphasizes the count, single brief affirmative head nod mid-sentence, confident closed-mouth smile, eyes steady on camera throughout, keep the one-finger gesture stable and clean.",
+      "estimated_seconds": 4,
+      "transition_in": "cut",
+      "transition_out": "cut",
+      "overlays": [
+        {
+          "type": "chip_label",
+          "content": "AUTOMATIZACIÓN",
+          "position": "right_side_chest_height",
+          "start": 1,
+          "end": 16,
+          "style": {
+            "icon": "⚙️",
+            "color": "ciberaula_blue",
+            "animation": "slide_in_from_right_300ms"
+          }
+        }
+      ],
+      "persistent_overlays": [
+        "logo_ciberaula_corner"
+      ]
+    },
+    {
+      "id": 6,
+      "base_image": "IMG_4",
+      "dialogue": "escribir copy que convierte",
+      "tone": "confident professional, brisk",
+      "emphasis_words": [
+        "copy que convierte"
+      ],
+      "motion_prompt": "Right hand with index and middle fingers extended together stays steady at chest height, very subtle head tilt of two degrees, calm confident expression, micro head nod on the keyword, eyes locked on camera, keep the two-finger gesture stable and clean.",
+      "estimated_seconds": 4,
+      "transition_in": "cut",
+      "transition_out": "cut",
+      "overlays": [
+        {
+          "type": "chip_label",
+          "content": "COPY",
+          "position": "right_side_chest_height_stacked_below_previous",
+          "start": 1,
+          "end": 12,
+          "style": {
+            "icon": "✍️",
+            "color": "ciberaula_blue",
+            "animation": "slide_in_from_right_300ms"
+          }
+        }
+      ],
+      "persistent_overlays": [
+        "logo_ciberaula_corner"
+      ]
+    },
+    {
+      "id": 7,
+      "base_image": "IMG_5",
+      "dialogue": "posicionar contenido en buscadores",
+      "tone": "confident professional, brisk",
+      "emphasis_words": [
+        "buscadores"
+      ],
+      "motion_prompt": "Subtle upward lift of the right hand showing three extended fingers as she emphasizes the count, single brief affirmative head nod mid-sentence, soft confident closed-mouth smile, eyes steady on camera throughout, keep the three-finger gesture stable and clean.",
+      "estimated_seconds": 4,
+      "transition_in": "cut",
+      "transition_out": "cut",
+      "overlays": [
+        {
+          "type": "chip_label",
+          "content": "SEO",
+          "position": "right_side_chest_height_stacked_below_previous",
+          "start": 1,
+          "end": 8,
+          "style": {
+            "icon": "🔍",
+            "color": "ciberaula_blue",
+            "animation": "slide_in_from_right_300ms"
+          }
+        }
+      ],
+      "persistent_overlays": [
+        "logo_ciberaula_corner"
+      ]
+    },
+    {
+      "id": 8,
+      "base_image": "IMG_6",
+      "dialogue": "y crear vídeos profesionales en minutos.",
+      "tone": "confident closing of the list",
+      "emphasis_words": [
+        "vídeos profesionales",
+        "minutos"
+      ],
+      "motion_prompt": "Both hands remain relaxed at her sides out of frame, slightly warmer and more pronounced closed-mouth smile closing the list with satisfaction, subtle confident head nod on the final words, calm steady eyes on camera, no hand gestures.",
+      "estimated_seconds": 4,
+      "transition_in": "cut",
+      "transition_out": "fade_8_frames",
+      "overlays": [
+        {
+          "type": "chip_label",
+          "content": "VÍDEO IA",
+          "position": "right_side_chest_height_stacked_below_previous",
+          "start": 1,
+          "end": 4,
+          "style": {
+            "icon": "🎬",
+            "color": "ciberaula_blue",
+            "animation": "slide_in_from_right_300ms"
+          }
+        }
+      ],
+      "persistent_overlays": [
+        "logo_ciberaula_corner"
+      ]
+    },
+    {
+      "id": 9,
+      "base_image": "IMG_1",
+      "dialogue": "Justo lo que tu competencia ya está aprendiendo.",
+      "tone": "competitive pressure, knowing",
+      "emphasis_words": [
+        "tu competencia"
+      ],
+      "motion_prompt": "Tight close-up energy, subtle raised right eyebrow on the words tu competencia, micro head tilt of two degrees to the left, slight knowing closed-mouth smile, intense steady eye contact with camera, no hand gestures.",
+      "estimated_seconds": 3,
+      "transition_in": "fade_in_from_previous_8_frames",
+      "transition_out": "fade_out_10_frames",
+      "camera_movement": {
+        "type": "crop_zoom",
+        "scale": 1.3,
+        "anchor": "center"
+      },
+      "overlays": [],
+      "persistent_overlays": [
+        "logo_ciberaula_corner"
+      ]
+    },
+    {
+      "id": 10,
+      "base_image": "IMG_7",
+      "dialogue": "Y lo mejor: es cien por cien bonificable por Fundáe.",
+      "tone": "complicit revelation, warm",
+      "emphasis_words": [
+        "cien por cien",
+        "Fundáe"
+      ],
+      "motion_prompt": "Subtle complicit warm smile starts on the opening words, slight head tilt of two to three degrees toward camera on Fundae, warm trustworthy expression conveying good news between colleagues, eyes steady on camera, no hand gestures.",
+      "estimated_seconds": 4,
+      "transition_in": "fade_in_from_black_10_frames",
+      "transition_out": "cut",
+      "overlays": [
+        {
+          "type": "badge_circular",
+          "content": "100% BONIFICABLE · FUNDAE",
+          "position": "right_side",
+          "start": 1.5,
+          "end": 11,
+          "style": {
+            "color": "fundae_orange_OR_ciberaula_blue",
+            "size": "25%_frame_height",
+            "animation": "bounce_in_500ms"
+          }
+        }
+      ],
+      "persistent_overlays": [
+        "logo_ciberaula_corner"
+      ]
+    },
+    {
+      "id": 11,
+      "base_image": "IMG_7",
+      "dialogue": "Sin coste para ti como trabajador.",
+      "tone": "reassuring, calm",
+      "emphasis_words": [
+        "sin coste para ti"
+      ],
+      "motion_prompt": "Left hand enters frame from below with open palm facing up in a transparent inclusive gesture as he says sin coste para ti, slow affirmative nod mid-phrase, warm relaxed smile, eyes steady on camera.",
+      "estimated_seconds": 4,
+      "transition_in": "cut",
+      "transition_out": "cut",
+      "overlays": [
+        {
+          "type": "checkmark_list",
+          "content": [
+            "0 € para ti",
+            "Tu empresa lo descuenta"
+          ],
+          "position": "left_side",
+          "start": 1,
+          "end": 7,
+          "style": {
+            "animation": "appear_sequentially_400ms_apart"
+          }
+        }
+      ],
+      "persistent_overlays": [
+        "logo_ciberaula_corner",
+        "fundae_badge"
+      ]
+    },
+    {
+      "id": 12,
+      "base_image": "IMG_7",
+      "dialogue": "Nosotros gestionamos todo el papeleo con tu empresa.",
+      "tone": "reassuring, firm closing",
+      "emphasis_words": [
+        "todo el papeleo"
+      ],
+      "motion_prompt": "Left hand still subtly visible in lower frame palm-up, steady eyes, definitive firm nod on the closing words, closed-mouth confident smile, calm warm expression.",
+      "estimated_seconds": 3,
+      "transition_in": "cut",
+      "transition_out": "fade_10_frames",
+      "overlays": [
+        {
+          "type": "checkmark_list_continuation",
+          "content": [
+            "Papeleo gestionado"
+          ],
+          "position": "left_side_third_item",
+          "start": 0.5,
+          "end": 3,
+          "style": {
+            "animation": "appear_at_42.5"
+          }
+        }
+      ],
+      "persistent_overlays": [
+        "logo_ciberaula_corner",
+        "fundae_badge"
+      ]
+    },
+    {
+      "id": 13,
+      "base_image": "IMG_8",
+      "dialogue": "Ciberaula. Formando profesionales desde mil novecientos noventa y seis.",
+      "tone": "solemn institutional gravitas",
+      "emphasis_words": [
+        "Ciberaula",
+        "mil novecientos noventa y seis"
+      ],
+      "motion_prompt": "Serene composed institutional smile, calm authoritative expression, very slight emphasis nod on the year reference, no hand gestures, posture upright and confident.",
+      "estimated_seconds": 4,
+      "transition_in": "fade_in_from_previous_10_frames",
+      "transition_out": "cut",
+      "overlays": [
+        {
+          "type": "lower_third",
+          "content": "Ciberaula · Desde 1996",
+          "position": "lower_left",
+          "start": 1,
+          "end": 4,
+          "style": {
+            "animation": "fade_in_at_46.0"
+          }
+        }
+      ],
+      "persistent_overlays": [
+        "logo_ciberaula_corner"
+      ]
+    },
+    {
+      "id": 14,
+      "base_image": "IMG_8",
+      "dialogue": "Solicita tu plaza en ciberaula punto com antes de que cierre la convocatoria.",
+      "tone": "inviting authoritative CTA, contained urgency",
+      "emphasis_words": [
+        "ciberaula punto com",
+        "antes de que cierre la convocatoria"
+      ],
+      "motion_prompt": "Calm authoritative inviting expression, subtle closed-mouth professional smile maintained throughout, single very subtle affirmative closing nod on the final word, eyes steady on camera lens for the entire duration, no hand gestures, posture upright.",
+      "estimated_seconds": 5,
+      "transition_in": "cut",
+      "transition_out": "fade_out_to_black_15_frames",
+      "camera_movement": {
+        "type": "push_in",
+        "start_scale": 1.02,
+        "end_scale": 1.05,
+        "duration": 5
+      },
+      "overlays": [
+        {
+          "type": "url_banner",
+          "content": "ciberaula.com",
+          "position": "lower_center",
+          "start": 1,
+          "end": 5,
+          "style": {
+            "size": "8%_frame_height",
+            "background_color": "ciberaula_blue_solid",
+            "text_color": "white",
+            "font": "corporate_sans",
+            "animation": "slide_up_from_bottom_400ms"
+          }
+        },
+        {
+          "type": "microcopy",
+          "content": "Plazas limitadas — convocatoria abierta",
+          "position": "below_url_banner",
+          "start": 1.5,
+          "end": 5
+        },
+        {
+          "type": "fundae_badge_small",
+          "position": "lower_right",
+          "start": 1,
+          "end": 5
+        }
+      ],
+      "persistent_overlays": [
+        "logo_ciberaula_corner"
+      ]
+    }
+  ],
+  "brand_assets": {}
+}
