@@ -91,6 +91,8 @@
   <a href="#shots-eval">Prueba HeyGen Shots</a>
   <a href="#costes">Costes / pricing</a>
   <a href="#duracion">Duración / rendimiento</a>
+  <a href="#velocidad">Velocidad / pace</a>
+  <a href="#lipsync">Lip-sync (Sync)</a>
   <a href="#mejoras">Mejoras futuras</a>
   <a href="#etapa2">Etapa 2</a>
 </nav>
@@ -505,9 +507,10 @@ node scripts/gen-zone-previews.mjs --sync</code></pre>
   <p>El nº de escenas dinámicas se fija con <code>dynamic_ratio</code> (≈mitad por defecto; tope opcional
   <code>max_dynamic_scenes</code>); el reparto garantiza apertura + cierre dinámicas, con movimiento variado por escena.</p>
   <div class="note"><b>Motor alternativo (<code>video.dynamic.provider</code>):</b> los 3 pasos de arriba son la ruta
-  <b>Veo</b> (<code>gemini</code> directo o <code>fal</code>). La 3ª opción, <b>HeyGen Shots</b> (<code>heygen-shot</code>),
-  usa un flujo distinto: el avatar (un <b>look</b> registrado) habla con su <b>voz nativa</b> y lip-sync, <b>sin</b>
-  voice changer ni mux. Ver <a href="#shots-eval">Prueba HeyGen Shots</a>.</div>
+  <b>Veo + STS</b> (<code>gemini</code> directo o <code>fal</code>). Otras opciones: <b>HeyGen Shots</b>
+  (<code>heygen-shot</code>) — avatar con voz nativa, sin STS (ver <a href="#shots-eval">Prueba HeyGen Shots</a>); y
+  <b>Sync</b> (<code>sync</code>, <b>el motor por defecto actual</b>) — Veo para el visual + TTS de ElevenLabs y
+  lip-sync en Sync, sin STS (ver <a href="#lipsync">Lip-sync (Sync)</a>).</div>
 </section>
 
 <section id="aprendizajes">
@@ -934,6 +937,112 @@ Coste real            ~$27 / vídeo   (+ margen = precio al cliente)</code></pre
   <code>src/core/pipeline.ts</code>, con un parámetro <code>concurrency</code> en <code>config.json</code>
   (default 1 = comportamiento actual). Avanzado: <b>pipelinear etapas</b> (empezar el vídeo de una escena en cuanto
   su imagen base está lista, sin esperar a que terminen todas las imágenes).</div>
+</section>
+
+<section id="velocidad">
+  <h2>El problema de la velocidad (pace del diálogo)</h2>
+  <p class="muted">La clienta pidió un ritmo más rápido. Su referencia es el vídeo <b>original puesto a 1.5× en
+  su reproductor (VLC)</b>, que le suena bien. El reto: replicar ESE sonido en un archivo ya horneado.</p>
+
+  <div class="warn"><b>Hallazgo central:</b> acelerar en <b>post</b> (offline) NO suena igual que la
+  <b>reproducción en tiempo real</b> de un player. El vídeo se generó una sola vez; la voz de las escenas
+  dinámicas viene de <b>Veo + voice-changer</b> y <b>no tiene un control de "velocidad de habla"</b> en origen,
+  así que la única palanca sobre el material existente es el <b>time-stretch</b> del audio. El resultado depende
+  por completo de <b>qué algoritmo</b> se use.</div>
+
+  <h3>Algoritmos / herramientas probados (a 1.5×)</h3>
+  <table>
+    <tr><th>Método</th><th>Herramienta</th><th>Cómo</th><th>Resultado</th></tr>
+    <tr><td><b>atempo</b> ✅</td><td>ffmpeg (filtro)</td><td><code>setpts=PTS/F</code> (vídeo) + <code>atempo=F</code> (audio), tono preservado</td><td>✅ <b>Mejor resultado práctico</b> y método elegido. A factores altos puede notarse algo "forzado", pero <b>ninguna alternativa lo superó</b>.</td></tr>
+    <tr><td><b>resample</b></td><td>ffmpeg (filtro)</td><td><code>asetrate=sr*F,aresample</code> — sube el tono</td><td>❌ Voz "de helio"</td></tr>
+    <tr><td><b>rubberband R2</b></td><td>ffmpeg (filtro <code>rubberband</code>)</td><td>phase-vocoder motor antiguo</td><td>❌ "Metálico"</td></tr>
+    <tr><td><b>VLC transcode</b></td><td>VLC <code>--rate=1.5</code> + sout</td><td>conversión por línea de comandos</td><td>❌ Dropouts (periodos sin voz). Ojo: la <b>reproducción</b> de VLC sí suena bien; su <b>conversor</b> no.</td></tr>
+    <tr><td><b>mpv encode</b></td><td>mpv <code>--speed=1.5</code></td><td>encode con pitch-correction</td><td>❌ No retima la salida (no acelera)</td></tr>
+    <tr><td><b>rubberband R3</b></td><td><b>CLI <code>rubberband</code></b> (separada)</td><td><code>rubberband -3 --tempo 1.5</code> sobre el WAV + mux con vídeo <code>setpts</code></td><td>🟡 Alta calidad en teoría, pero en la práctica <b>NO superó a <code>atempo</code></b> para esta locución.</td></tr>
+  </table>
+
+  <div class="ok"><b>Receta del método elegido (atempo):</b> el más simple y, en la práctica, el que mejor
+  resultado dio para esta voz.
+  <pre><code>ffmpeg -i final.mp4 -filter:v "setpts=PTS/1.5" -filter:a "atempo=1.5" \
+       -c:v libx264 -pix_fmt yuv420p -c:a aac -b:a 192k out.mp4</code></pre></div>
+  <div class="note"><b>Alternativa probada (rubberband R3):</b> mayor calidad teórica, pero <b>no mejoró a atempo</b>
+  aquí. Se deja documentada por si en otra locución compensa:
+  <pre><code>ffmpeg -i final.mp4 -vn -acodec pcm_s16le -ar 48000 -ac 2 orig.wav
+rubberband -3 --tempo 1.5 orig.wav fast.wav
+ffmpeg -i final.mp4 -i fast.wav -filter:v "setpts=PTS/1.5" \
+       -map 0:v -map 1:a -c:v libx264 -c:a aac -shortest out.mp4</code></pre></div>
+
+  <div class="note"><b>Equivalencia velocidad ⇄ player:</b> "+X%" = factor <code>1+X/100</code> = lo mismo que poner
+  <code>(1+X/100)×</code> en un player. Es decir <b>1.5× = +50%</b>, <b>1.4× = +40%</b>, <b>1.3× = +30%</b>.</div>
+
+  <div class="warn"><b>Nota de entorno:</b> instalar VLC/mpv (vía brew) <b>actualizó ffmpeg 8.0.1 → 8.1.2</b>, que
+  perdió el filtro <code>rubberband</code> (y nunca tuvo <code>scaletempo</code>/<code>scaletempo2</code>). <b>No es
+  problema:</b> el método elegido (<code>atempo</code>) está en el núcleo de ffmpeg y sigue disponible; la alternativa
+  rubberband se puede usar vía su <b>CLI</b> (R3) si en otra locución compensara.</div>
+
+  <p>Si <code>atempo</code> no llega a igualar al VLC de la clienta, la salida pragmática es entregar el <b>original a velocidad
+  normal</b> y que ella lo vea a 1.5 en su VLC (el sonido exacto que validó), dejando el bake solo para la versión
+  publicada. Hornear la velocidad en el pipeline está en el <a href="#mejoras">backlog</a> (bloqueado hasta su OK).</p>
+</section>
+
+<section id="lipsync">
+  <h2>Lip-sync con Sync.so (evaluación)</h2>
+  <p class="muted">Evaluación (jun 2026) de <b>Sync (sync.so)</b> como herramienta de lip-sync: re-anima la boca
+  de un vídeo para que cuadre con un audio. Motivada por el tema del <a href="#velocidad">pace</a> y por mejorar
+  el lip-sync respecto a nuestro Veo+STS.</p>
+
+  <div class="note"><b>Contexto:</b> <b>ElevenLabs</b> también tiene Lip-Sync, pero es <b>solo Studio (web), sin API</b>
+  (su único endpoint de vídeo es Dubbing). Por eso para automatizar usamos <b>Sync</b>, que sí tiene API REST.</div>
+
+  <h3>API de Sync (lo que usamos)</h3>
+  <table>
+    <tr><th>Qué</th><th>Endpoint / detalle</th></tr>
+    <tr><td>Base URL · Auth</td><td><code>https://api.sync.so</code> · header <code>x-api-key</code></td></tr>
+    <tr><td>Subir archivo</td><td><code>POST /v2/assets/upload</code> con <code>{fileName, size, contentType}</code> → devuelve <code>uploadUrl</code> (S3) + <code>url</code>; luego <code>PUT</code> de los bytes a <code>uploadUrl</code> (máx 20&nbsp;MB)</td></tr>
+    <tr><td>Crear generación</td><td><code>POST /v2/generate</code> (JSON): <code>model</code> + <code>input[]</code> (video + audio/texto) + <code>options</code></td></tr>
+    <tr><td>Estado / salida</td><td><code>GET /v2/generate/{id}</code> → <code>status</code> (PENDING→PROCESSING→COMPLETED/FAILED/REJECTED) + <code>outputUrl</code></td></tr>
+    <tr><td>Estimar coste</td><td><code>POST /v2/generations/estimate</code> con <code>{model, duration}</code> → <code>estimatedGenerationCost</code></td></tr>
+  </table>
+
+  <div class="ok"><b>TTS de ElevenLabs integrado en Sync:</b> en vez de subir un audio, se pasa el <b>diálogo + la voz</b>
+  y Sync sintetiza la voz y sincroniza la boca en una sola llamada:
+  <pre><code>{ "model": "lipsync-2",
+  "input": [
+    { "type": "video", "url": "&lt;clip&gt;" },
+    { "type": "text", "provider": {
+        "name": "elevenlabs", "voiceId": "&lt;voiceId&gt;",
+        "script": "&lt;diálogo&gt;", "stability": 0.5, "similarityBoost": 0.75 } }
+  ] }</code></pre>
+  Devuelve también <code>synthesizedAudioUrl</code> (la voz generada, reutilizable). Esto permite saltarse el paso STS.</div>
+
+  <h3>Modelos y coste (probados en una escena de ~6s, vídeo = raw de Veo + voz Sofía)</h3>
+  <table>
+    <tr><th>Modelo</th><th>Coste/escena (~6s)</th><th>Coste vídeo (9 esc.)</th><th>Posicionamiento</th></tr>
+    <tr><td><code>lipsync-1.9.0-beta</code></td><td>~$0.12</td><td>~$1.5</td><td>legacy, máxima velocidad</td></tr>
+    <tr><td><code>lipsync-2</code></td><td>~$0.48</td><td>~$4</td><td>económico, uso diario</td></tr>
+    <tr><td><code>lipsync-2-pro</code></td><td>~$0.61</td><td>~$5.5</td><td>más fidelidad/detalle</td></tr>
+    <tr><td><code>sync-3</code></td><td>~$0.97</td><td>~$8-9</td><td>gama alta, máxima naturalidad</td></tr>
+    <tr><td><code>react-1</code></td><td>—</td><td>—</td><td>emoción facial guiada por prompt</td></tr>
+  </table>
+
+  <h3>Hallazgos</h3>
+  <ul>
+    <li><b>Funciona y está automatizado</b> (subida presigned + generate + poll + descarga). Scripts: <code>scripts/sync-lipsync-test.mjs</code> (audio existente) y <code>scripts/sync-lipsync-tts.mjs</code> (TTS desde diálogo). Requiere <code>SYNC_API_KEY</code>.</li>
+    <li>Dos flujos validados: (1) <b>lip-sync a la voz clonada existente</b>; (2) <b>TTS ElevenLabs desde el diálogo + lip-sync</b> (sin STS).</li>
+    <li><b>La locución TTS sale más ágil</b>: ~6,0s vs ~8,0s del Veo+STS para la misma frase, y <b>limpia</b> (sin estiramiento) → vía prometedora para el <a href="#velocidad">pace</a> sin <code>atempo</code>.</li>
+    <li>Reusa el clip de Veo ya generado (solo re-anima la boca) → <b>más barato que re-renderizar en Veo</b> (~$0.48 vs ~$1.20/escena con lipsync-2).</li>
+  </ul>
+
+  <div class="ok"><b>✅ Integrado y por defecto.</b> Hay un <code>SyncDynamicProvider</code> y
+  <code>video.dynamic.provider = "sync"</code> es el motor dinámico por defecto. Flujo:
+  <b>Veo i2v (visual, cara hablando) → Sync: TTS ElevenLabs (desde el diálogo) + lip-sync → <code>scene-NN.mp4</code></b>.
+  <b>No usa el voice-changer (STS).</b> Config: <code>syncModel</code> (default <code>lipsync-2</code>); credenciales
+  <code>FAL_KEY</code> (visual Veo) + <code>SYNC_API_KEY</code> (lip-sync). El STS sigue disponible cambiando
+  <code>provider</code> a <code>fal</code>/<code>gemini</code>.</div>
+  <div class="note"><b>Cómo cambia el pipeline:</b> en el flujo <code>sync</code> desaparecen el <b>STS</b> y el mux de
+  audio propio; Veo solo aporta el <b>visual</b> (su audio/voz/música se descartan, así que su mala pronunciación de
+  siglas deja de importar — la voz la pone el TTS de Sync). <b>Coste:</b> sube (Veo ~$1.20 + Sync ~$0.48 con lipsync-2
+  ≈ <b>~$1.70/escena</b>), porque Sync se añade a Veo, no lo reemplaza. Aún no contemplado en <code>costs.md</code> (backlog).</div>
 </section>
 
 <section id="mejoras">

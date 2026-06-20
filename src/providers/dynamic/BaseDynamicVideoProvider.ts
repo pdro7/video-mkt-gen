@@ -15,6 +15,8 @@ export interface DynamicSceneInput {
   referenceMimeType?: string;
   /** Prompt del modelo de video (entorno + movimiento + apariencia + la línea de diálogo). */
   prompt: string;
+  /** Diálogo en texto plano (para TTS del provider Sync; la voz se genera desde aquí). */
+  script?: string;
   /** voice_id de ElevenLabs para revoz (la voz real del personaje). Camino Veo (gemini/fal). */
   voiceId?: string;
   /** Ajustes de voz para el STS (empujan la conversión hacia la voz objetivo). */

@@ -14,6 +14,7 @@ export interface Credentials {
   falKey?: string;
   openaiApiKey?: string;
   kieApiKey?: string;
+  syncApiKey?: string;
 }
 
 export function loadCredentials(): Credentials {
@@ -25,6 +26,7 @@ export function loadCredentials(): Credentials {
     falKey: process.env.FAL_KEY,
     openaiApiKey: process.env.OPENAI_API_KEY,
     kieApiKey: process.env.KIE_API_KEY,
+    syncApiKey: process.env.SYNC_API_KEY,
   };
 }
 
@@ -80,6 +82,11 @@ export function assertCredentialsForConfig(config: AppConfig, creds: Credentials
   if (config.video.dynamic.provider === "fal" && !creds.falKey) missing.push("FAL_KEY (video dinámico fal)");
   if (config.video.dynamic.provider === "heygen-shot" && !creds.heygenApiKey) {
     missing.push("HEYGEN_API_KEY (video dinámico heygen-shot)");
+  }
+  // Sync: Veo (vía fal) para el visual + Sync para TTS+lip-sync.
+  if (config.video.dynamic.provider === "sync") {
+    if (!creds.falKey) missing.push("FAL_KEY (video dinámico sync: visual con Veo)");
+    if (!creds.syncApiKey) missing.push("SYNC_API_KEY (video dinámico sync: lip-sync)");
   }
 
   if (missing.length > 0) {

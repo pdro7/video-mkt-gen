@@ -271,12 +271,13 @@ export class Pipeline {
       // Escena DINÁMICA: motor Veo reference-to-video + voice changer.
       if (scene.motion) {
         try {
-          await this.renderDynamic(spec, scene, character);
+          const prompt = await this.renderDynamic(spec, scene, character);
           upsert(videos, "sceneId", {
             sceneId: scene.id,
             status: "completed",
             filePath: this.workspace.videoPath(scene.id),
             genSeconds: round1(elapsedSeconds(t0)),
+            prompt,
           });
           log.info(`Escena ${scene.id}: video dinámico listo (${round1(elapsedSeconds(t0))}s).`);
         } catch (e) {
@@ -484,11 +485,12 @@ export class Pipeline {
   /** ¿El motor dinámico parte de un frame inicial (fal image-to-video)? → las dinámicas necesitan base_image. */
   private dynamicUsesStartFrame(): boolean {
     const d = this.config.video.dynamic;
-    return d.provider === "fal" && d.falModel.includes("image-to-video");
+    // fal y sync usan el motor Veo de fal; con image-to-video el frame inicial es la imagen base.
+    return (d.provider === "fal" || d.provider === "sync") && d.falModel.includes("image-to-video");
   }
 
   /** Renderiza una escena dinámica: Veo (reference- o image-to-video) + voice changer + mux. */
-  private async renderDynamic(spec: ProductionSpec, scene: SceneSpec, character: CharacterConfig): Promise<void> {
+  private async renderDynamic(spec: ProductionSpec, scene: SceneSpec, character: CharacterConfig): Promise<string> {
     if (!this.providers.dynamic) {
       throw new Error("Escena dinámica pero el motor dinámico no está disponible (faltan credenciales del provider configurado).");
     }
@@ -498,13 +500,14 @@ export class Pipeline {
       if (!character.heygenLookId) {
         throw new Error(`Personaje "${character.id}" sin heygenLookId (requerido para video.dynamic.provider="heygen-shot").`);
       }
+      const prompt = this.buildShotPrompt(spec, scene, character);
       await this.providers.dynamic.generate({
-        prompt: this.buildShotPrompt(spec, scene, character),
+        prompt,
         heygenLookId: character.heygenLookId,
         aspectRatio: this.config.video.aspectRatio,
         outputPath: this.workspace.videoPath(scene.id),
       });
-      return;
+      return prompt;
     }
 
     // Veo (gemini/fal): reference-to-video o image-to-video + voice changer (ElevenLabs STS).
@@ -519,15 +522,18 @@ export class Pipeline {
     } else {
       img = this.readReference(character);
     }
+    const prompt = this.buildDynamicPrompt(spec, scene, character);
     await this.providers.dynamic.generate({
       referenceImage: img.data,
       referenceMimeType: img.mimeType,
-      prompt: this.buildDynamicPrompt(spec, scene, character),
+      prompt,
+      script: scene.dialogue, // texto plano para el TTS del provider Sync
       voiceId: character.elevenLabs.voiceId,
       voiceSettings: character.elevenLabs.params,
       aspectRatio: this.config.video.aspectRatio,
       outputPath: this.workspace.videoPath(scene.id),
     });
+    return prompt;
   }
 
   /**

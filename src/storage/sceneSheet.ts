@@ -47,6 +47,8 @@ interface Row {
   chars: string[];
   duo: boolean;
   dialogue: string;
+  prompt?: string;
+  imgPrompt?: string;
 }
 
 export function writeSceneSheet(runDir: string, manifest: RunManifest): string | null {
@@ -71,7 +73,9 @@ export function writeSceneSheet(runDir: string, manifest: RunManifest): string |
       ? s.cast!.map((c) => c.character)
       : [manifest.spec?.base_images?.[s.base_image]?.character ?? ""];
     const dialogue = duo ? s.cast!.map((c) => `${cap(c.character)}: ${c.dialogue}`).join("  /  ") : s.dialogue ?? "";
-    rows.push({ id: s.id, nn, start: cum, end: cum + dur, chars, duo, dialogue });
+    const prompt = manifest.videos?.find((v) => v.sceneId === s.id)?.prompt;
+    const imgPrompt = manifest.images?.find((i) => i.baseImageId === s.base_image)?.prompt;
+    rows.push({ id: s.id, nn, start: cum, end: cum + dur, chars, duo, dialogue, prompt, imgPrompt });
     cum += dur;
   }
   if (!rows.length) return null;
@@ -83,13 +87,20 @@ export function writeSceneSheet(runDir: string, manifest: RunManifest): string |
       const img = existsSync(join(thumbsDir, `scene-${r.nn}.jpg`))
         ? `<img src="thumbs/scene-${r.nn}.jpg" alt="escena ${r.id}">`
         : '<span class="muted">—</span>';
+      const vidLabel = r.duo ? "🎬 Prompt dúo (HeyGen Cinematic)" : "🎬 Prompt vídeo (Veo)";
+      const promptHtml = r.prompt
+        ? `<details class="prompt"><summary>${vidLabel}</summary><div>${esc(r.prompt)}</div></details>`
+        : "";
+      const imgPromptHtml = r.imgPrompt
+        ? `<details class="prompt img"><summary>🖼️ Prompt imagen base (Nano Banana)</summary><div>${esc(r.imgPrompt)}</div></details>`
+        : "";
       return `<tr>
       <td class="n">${r.id}</td>
       <td class="tc">${tc(r.start)}–${tc(r.end)}</td>
       <td>${img}</td>
       <td class="ch">${esc(chars)}</td>
       <td>${tipo}</td>
-      <td class="dlg">${esc(r.dialogue)}</td>
+      <td class="dlg">${esc(r.dialogue)}${promptHtml}${imgPromptHtml}</td>
     </tr>`;
     })
     .join("\n");
@@ -110,6 +121,11 @@ td.tc{font-family:ui-monospace,Menlo,monospace;font-size:13px;white-space:nowrap
 img{width:200px;border-radius:6px;display:block}
 td.ch{white-space:nowrap;font-weight:600}
 td.dlg{font-size:13.5px;color:#333}
+details.prompt{margin-top:8px}
+details.prompt summary{cursor:pointer;color:#7a2aa8;font-size:12px;font-weight:600}
+details.prompt div{margin-top:6px;padding:8px 10px;background:#faf6ff;border:1px solid #ecdcff;border-radius:6px;font-size:12px;color:#444;line-height:1.45;white-space:pre-wrap}
+details.prompt.img summary{color:#2a52a8}
+details.prompt.img div{background:#f4f8ff;border-color:#cfe0fb}
 .muted{color:#b8bec6}
 @media print{body{background:#fff}.wrap{max-width:none}}
 </style></head><body><div class="wrap">

@@ -11,6 +11,7 @@ import { NanoBananaProvider } from "./image/NanoBananaProvider.js";
 import { DynamicVideoProvider } from "./dynamic/DynamicVideoProvider.js";
 import { FalDynamicVideoProvider } from "./dynamic/FalDynamicVideoProvider.js";
 import { HeyGenShotProvider } from "./dynamic/HeyGenShotProvider.js";
+import { SyncDynamicProvider } from "./dynamic/SyncDynamicProvider.js";
 import type { DynamicProvider } from "./dynamic/BaseDynamicVideoProvider.js";
 
 /**
@@ -44,6 +45,18 @@ function createDynamic(config: AppConfig, creds: Credentials): DynamicProvider |
   if (dyn.provider === "heygen-shot") {
     if (!creds.heygenApiKey) return null;
     return new HeyGenShotProvider({ apiKey: creds.heygenApiKey, resolution: dyn.shotResolution });
+  }
+  // Sync: Veo (fal) para el visual + Sync para TTS (ElevenLabs integrado) + lip-sync. NO usa STS propio.
+  if (dyn.provider === "sync") {
+    if (!creds.falKey || !creds.syncApiKey) return null;
+    return new SyncDynamicProvider({
+      falKey: creds.falKey,
+      elevenLabsApiKey: creds.elevenLabsApiKey ?? "",
+      falModel: dyn.falModel,
+      stsModel: dyn.stsModel,
+      syncApiKey: creds.syncApiKey,
+      syncModel: dyn.syncModel,
+    });
   }
   // Veo (gemini/fal): el voice changer (ElevenLabs) es común.
   if (!creds.elevenLabsApiKey) return null;

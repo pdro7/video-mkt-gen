@@ -86,12 +86,15 @@ export const appConfigSchema = z.object({
            *  - "gemini": Veo directo de Google + voice changer (STS).
            *  - "fal": Veo vía fal.ai (cuota aparte) + voice changer (STS).
            *  - "heygen-shot": HeyGen Cinematic Avatar (Seedance); voz NATIVA del look (sin STS).
+           *  - "sync": Veo (vía fal) para el visual + Sync.so para TTS (ElevenLabs) + lip-sync (sin STS).
            */
-          provider: z.enum(["gemini", "fal", "heygen-shot"]).default("gemini"),
+          provider: z.enum(["gemini", "fal", "heygen-shot", "sync"]).default("sync"),
           veoModel: z.string().default("veo-3.1-generate-preview"),
-          /** Modelo de fal cuando provider === "fal" (reference-to-video). */
+          /** Modelo de fal cuando provider === "fal"/"sync" (el visual de Veo). */
           falModel: z.string().default("fal-ai/veo3.1/reference-to-video"),
           stsModel: z.string().default("eleven_multilingual_sts_v2"),
+          /** Modelo de lip-sync de Sync (provider="sync"): lipsync-2, lipsync-2-pro, sync-3… */
+          syncModel: z.string().default("lipsync-2"),
           /** Resolución de HeyGen Shots (provider="heygen-shot"): 720p (más barato) o 1080p. */
           shotResolution: z.enum(["720p", "1080p"]).default("720p"),
         })

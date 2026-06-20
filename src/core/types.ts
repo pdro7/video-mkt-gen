@@ -45,6 +45,8 @@ export interface SceneVideo {
   error?: string;
   /** Tiempo total de creación del video en segundos (subida + render + descarga). */
   genSeconds?: number;
+  /** Prompt enviado al motor de vídeo (Veo dinámico / shot), para trazabilidad y la hoja de escenas. */
+  prompt?: string;
 }
 
 /** Manifiesto persistido por run: permite reanudar (spec -> images -> voice -> video). */
