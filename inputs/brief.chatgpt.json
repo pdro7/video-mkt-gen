@@ -11,6 +11,10 @@
     "Aprendizaje práctico con ejemplos reales",
     "CTA: apúntate en Ciberaula al curso de productividad con ChatGPT"
   ],
-  "character_ids": ["sofia", "marcos"],
-  "protagonist": "sofia"
+  "character_ids": [
+    "sofia",
+    "marcos"
+  ],
+  "protagonist": "sofia",
+  "source_url": "https://www.ciberaula.com/curso-online-de-productividad-en-la-empresa-con-chat-gpt-nivel-inicial-medio"
 }

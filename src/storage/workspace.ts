@@ -3,7 +3,7 @@ import { join, resolve } from "node:path";
 import type { RunManifest } from "../core/types.js";
 
 /**
- * Workspace por corrida: guarda artefactos en output/<runId>/ para reanudar etapas
+ * Workspace por run: guarda artefactos en output/<runId>/ para reanudar etapas
  * (spec -> images -> voice -> video) sin repetir trabajo.
  *
  *   output/<runId>/
@@ -97,12 +97,12 @@ export function makeRunId(date: Date): string {
 export function openWorkspace(outputDir: string, runId: string): Workspace {
   const ws = new Workspace(outputDir, runId);
   if (!existsSync(ws.manifestPath)) {
-    throw new Error(`No existe un manifiesto para la corrida "${runId}" en ${ws.root}`);
+    throw new Error(`No existe un manifiesto para el run "${runId}" en ${ws.root}`);
   }
   return ws;
 }
 
-/** Lista las corridas disponibles en el directorio de salida. */
+/** Lista los runs disponibles en el directorio de salida. */
 export function listRuns(outputDir: string): string[] {
   const abs = resolve(outputDir);
   if (!existsSync(abs)) return [];

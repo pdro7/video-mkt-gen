@@ -58,7 +58,7 @@ export function writeTimingsReport(
 
   for (const scene of spec.scenes) {
     const v = vidById.get(scene.id);
-    if (!v || v.genSeconds == null) continue; // solo escenas creadas en esta corrida
+    if (!v || v.genSeconds == null) continue; // solo escenas creadas en este run
     const baseId = scene.base_image;
     let imgT = 0;
     let note = `reusa ${baseId}`;

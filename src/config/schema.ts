@@ -25,6 +25,12 @@ export const characterConfigSchema = z.object({
   /** Imagen base de referencia (fondo neutro) — p. ej. Avatars/elena.png. */
   referenceImagePath: z.string().min(1),
   /**
+   * Id del LOOK de HeyGen (avatar registrado), para escenas dinámicas con HeyGen Shots
+   * (Cinematic Avatar). La voz la pone la configurada por defecto en ese look.
+   * Requerido cuando video.dynamic.provider === "heygen-shot".
+   */
+  heygenLookId: z.string().optional(),
+  /**
    * Id de voz en HeyGen (camino por defecto). Puede ser una voz de ElevenLabs
    * CONECTADA dentro de HeyGen: HeyGen llama a ElevenLabs internamente; aquí solo va el id.
    * Requerido cuando providers.voice === "heygen".
@@ -75,8 +81,19 @@ export const appConfigSchema = z.object({
       /** Motor para escenas dinámicas (avatar en movimiento): Veo + voice changer. */
       dynamic: z
         .object({
+          /**
+           * Motor de escenas dinámicas:
+           *  - "gemini": Veo directo de Google + voice changer (STS).
+           *  - "fal": Veo vía fal.ai (cuota aparte) + voice changer (STS).
+           *  - "heygen-shot": HeyGen Cinematic Avatar (Seedance); voz NATIVA del look (sin STS).
+           */
+          provider: z.enum(["gemini", "fal", "heygen-shot"]).default("gemini"),
           veoModel: z.string().default("veo-3.1-generate-preview"),
+          /** Modelo de fal cuando provider === "fal" (reference-to-video). */
+          falModel: z.string().default("fal-ai/veo3.1/reference-to-video"),
           stsModel: z.string().default("eleven_multilingual_sts_v2"),
+          /** Resolución de HeyGen Shots (provider="heygen-shot"): 720p (más barato) o 1080p. */
+          shotResolution: z.enum(["720p", "1080p"]).default("720p"),
         })
         .default({}),
     })

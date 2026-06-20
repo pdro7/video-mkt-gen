@@ -76,6 +76,12 @@ export function assertCredentialsForConfig(config: AppConfig, creds: Credentials
   if (config.providers.image === "openai" && !creds.openaiApiKey) missing.push("OPENAI_API_KEY (image openai)");
   if (config.providers.image === "kie" && !creds.kieApiKey) missing.push("KIE_API_KEY (image kie)");
 
+  // Motor de escenas dinámicas: la generación del clip depende del provider elegido.
+  if (config.video.dynamic.provider === "fal" && !creds.falKey) missing.push("FAL_KEY (video dinámico fal)");
+  if (config.video.dynamic.provider === "heygen-shot" && !creds.heygenApiKey) {
+    missing.push("HEYGEN_API_KEY (video dinámico heygen-shot)");
+  }
+
   if (missing.length > 0) {
     throw new Error(
       `Faltan credenciales en el entorno (.env):\n${missing.map((m) => `  - ${m}`).join("\n")}`,

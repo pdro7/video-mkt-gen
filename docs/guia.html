@@ -1,0 +1,992 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>video-mkt-gen · Guía del proyecto</title>
+<style>
+  :root{
+    --bg:#f6f8fa;--panel:#ffffff;--panel2:#eef1f6;--fg:#1f2733;--mut:#5b6675;--line:#dde2e8;
+    --accent:#2563eb;--green:#1a7f37;--amber:#9a6700;--purple:#8250df;--pink:#bf3989;--mono:#0550ae;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  header{padding:28px 24px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#ffffff,#eef1f6)}
+  header h1{margin:0;font-size:24px}
+  header p{margin:6px 0 0;color:var(--mut)}
+  .wrap{display:flex;max-width:1100px;margin:0 auto;gap:28px;padding:24px}
+  nav{position:sticky;top:16px;align-self:flex-start;min-width:210px;font-size:14px}
+  nav a{display:block;color:var(--mut);text-decoration:none;padding:4px 8px;border-radius:6px}
+  nav a:hover{color:var(--fg);background:var(--panel2)}
+  nav .sec{color:#2a3441;font-weight:800;text-transform:uppercase;font-size:11.5px;letter-spacing:.09em;margin:20px 0 6px;padding:9px 8px 0;border-top:1px solid var(--line)}
+  nav .sec:first-child{border-top:0;padding-top:0;margin-top:2px}
+  main{flex:1;min-width:0}
+  section{margin-bottom:34px}
+  h2{font-size:20px;border-bottom:1px solid var(--line);padding-bottom:6px;margin-top:0}
+  h3{font-size:16px;margin:20px 0 8px}
+  p,li{color:#33404e}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:#eef2f7;color:var(--mono);padding:1px 6px;border-radius:5px;font-size:13px}
+  pre{background:#f3f5f8;border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow:auto}
+  pre code{background:none;color:#243049;padding:0}
+  table{border-collapse:collapse;width:100%;margin:8px 0;font-size:14px;background:var(--panel)}
+  th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+  th{background:var(--panel2);color:#2a3441}
+  td code{font-size:12.5px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:12px 0;box-shadow:0 1px 2px rgba(20,30,50,.04)}
+  .pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:600;border:1px solid}
+  .p-claude{color:var(--purple);border-color:var(--purple)}
+  .p-img{color:var(--green);border-color:var(--green)}
+  .p-voice{color:var(--pink);border-color:var(--pink)}
+  .p-video{color:var(--accent);border-color:var(--accent)}
+  .flow{display:flex;flex-wrap:wrap;gap:8px;align-items:stretch;margin:10px 0}
+  .step{flex:1 1 150px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+  .step b{display:block;color:#1f2733;margin-bottom:3px}
+  .step small{color:var(--mut)}
+  .note{border-left:3px solid var(--amber);background:#fff8e6;padding:10px 14px;border-radius:0 8px 8px 0;margin:10px 0}
+  .ok{border-left:3px solid var(--green);background:#eaf7ec;padding:10px 14px;border-radius:0 8px 8px 0;margin:10px 0}
+.warn{border-left:3px solid #d9534f;background:#fdecea;padding:10px 14px;border-radius:0 8px 8px 0;margin:10px 0}
+  .muted{color:var(--mut)}
+  hr{border:0;border-top:1px solid var(--line);margin:24px 0}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .diagram{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;margin:14px 0}
+  .diagram svg{width:100%;height:auto;display:block}
+  .zone-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin:14px 0}
+  figure.zone{margin:0;background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  figure.zone img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;background:#e9edf2}
+  figure.zone figcaption{padding:8px 10px;font-size:12.5px;color:#33404e}
+  figure.zone figcaption b{color:var(--mono)}
+  @media(max-width:820px){.wrap{flex-direction:column}.two{grid-template-columns:1fr}nav{position:static}}
+</style>
+</head>
+<body>
+<header>
+  <h1>video-mkt-gen</h1>
+  <p>Generador de videos promocionales con avatares — guía de funcionamiento, uso y parámetros.</p>
+</header>
+
+<div class="wrap">
+<nav>
+  <div class="sec">Conceptos</div>
+  <a href="#que-es">Qué es</a>
+  <a href="#flujo">Flujo end-to-end</a>
+  <a href="#arquitectura">Arquitectura</a>
+  <a href="#rutas">Talking-head vs dinámico</a>
+  <div class="sec">Uso</div>
+  <a href="#setup">Setup inicial</a>
+  <a href="#comandos">Comandos</a>
+  <a href="#salida">Salida y reportes</a>
+  <div class="sec">Parámetros</div>
+  <a href="#env">.env</a>
+  <a href="#config">config.json</a>
+  <a href="#voces">Voces</a>
+  <a href="#brief">brief.json</a>
+  <a href="#zones">zones.json</a>
+  <a href="#spec">spec (v2)</a>
+  <div class="sec">Avanzado</div>
+  <a href="#dinamico">Receta dinámica</a>
+  <a href="#aprendizajes">Aprendizajes clave</a>
+  <a href="#prompts">Prompts del sistema</a>
+  <a href="#gotchas">Gotchas</a>
+  <a href="#registro">Registro de problemas</a>
+  <a href="#shots-eval">Prueba HeyGen Shots</a>
+  <a href="#costes">Costes / pricing</a>
+  <a href="#duracion">Duración / rendimiento</a>
+  <a href="#mejoras">Mejoras futuras</a>
+  <a href="#etapa2">Etapa 2</a>
+</nav>
+
+<main>
+
+<section id="que-es">
+  <h2>Qué es</h2>
+  <p>Herramienta para <b>renovar los videos promocionales</b> de las categorías de cursos de Ciberaula.
+  A partir del <b>transcript del video actual</b>, un LLM lo reescribe para que sea más <b>vendedor</b>,
+  lo estructura en escenas, y el pipeline genera el video combinando <b>avatares</b> (con su voz real)
+  en distintos <b>escenarios</b>, mezclando planos fijos (talking-head) y escenas con <b>movimiento</b>.</p>
+  <p><b>Salida:</b> video horizontal 16:9, ~1 minuto, un video por categoría de curso.</p>
+  <div class="card">
+    <b>Pensado como producto:</b> todo lo específico del cliente (credenciales, personajes, zonas)
+    vive en <code>.env</code> + <code>config.json</code> + <code>zones.json</code>. Cambiar de cliente =
+    cambiar esos archivos, sin tocar el código.
+  </div>
+</section>
+
+<section id="flujo">
+  <h2>Flujo de inicio a fin</h2>
+
+  <div class="diagram">
+  <svg viewBox="0 0 720 640" role="img" aria-label="Diagrama del flujo del pipeline">
+    <defs>
+      <marker id="arr" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto">
+        <path d="M0,0 L7,3 L0,6 z" fill="#8893a3"/>
+      </marker>
+      <style>
+        .bx{rx:9;ry:9;stroke-width:1.6}
+        .t{font:600 13px -apple-system,Segoe UI,Roboto,sans-serif;fill:#1f2733}
+        .s{font:11px -apple-system,Segoe UI,Roboto,sans-serif;fill:#5b6675}
+        .lab{font:700 11px -apple-system;fill:#5b6675}
+        .ln{stroke:#8893a3;stroke-width:1.7;fill:none}
+      </style>
+    </defs>
+
+    <!-- 1 Brief -->
+    <rect class="bx" x="260" y="14" width="200" height="46" fill="#eef1f5" stroke="#c2cad6"/>
+    <text class="t" x="360" y="33" text-anchor="middle">1 · Brief</text>
+    <text class="s" x="360" y="49" text-anchor="middle">transcript actual + datos del curso</text>
+
+    <!-- 2 Claude -->
+    <rect class="bx" x="250" y="92" width="220" height="48" fill="#f3eefe" stroke="#b69cf0"/>
+    <text class="t" x="360" y="111" text-anchor="middle">2 · Claude → Spec v2</text>
+    <text class="s" x="360" y="127" text-anchor="middle">reescribe copy vendedor + estructura escenas</text>
+
+    <!-- 3 Imagenes -->
+    <rect class="bx" x="250" y="172" width="220" height="48" fill="#e9f6ec" stroke="#7fc795"/>
+    <text class="t" x="360" y="191" text-anchor="middle">3 · Nano Banana 2 → imágenes</text>
+    <text class="s" x="360" y="207" text-anchor="middle">avatar en la zona (solo talking-head)</text>
+
+    <!-- 4 Router -->
+    <rect class="bx" x="266" y="252" width="188" height="46" fill="#fff5e0" stroke="#e3b85c"/>
+    <text class="t" x="360" y="271" text-anchor="middle">4 · Router por escena</text>
+    <text class="s" x="360" y="287" text-anchor="middle">¿la escena tiene "motion"?</text>
+
+    <!-- Branch A: talking-head -->
+    <rect class="bx" x="56" y="346" width="262" height="60" fill="#eaf1ff" stroke="#9bbaf5"/>
+    <text class="t" x="187" y="368" text-anchor="middle">NO → Talking-head</text>
+    <text class="s" x="187" y="384" text-anchor="middle">HeyGen Avatar IV (plano fijo + gestos)</text>
+    <text class="s" x="187" y="398" text-anchor="middle">voz: HeyGen (heygenVoiceId)</text>
+
+    <!-- Branch B: dynamic -->
+    <rect class="bx" x="402" y="346" width="262" height="60" fill="#eaf1ff" stroke="#9bbaf5"/>
+    <text class="t" x="533" y="368" text-anchor="middle">SÍ → Dinámico</text>
+    <text class="s" x="533" y="384" text-anchor="middle">Veo 3.1 ref-to-video → voice changer</text>
+    <text class="s" x="533" y="398" text-anchor="middle">→ trim · voz real (ElevenLabs)</text>
+
+    <!-- 5 Concat -->
+    <rect class="bx" x="235" y="452" width="250" height="46" fill="#eef1f5" stroke="#c2cad6"/>
+    <text class="t" x="360" y="471" text-anchor="middle">5 · Concat + normaliza 1080p</text>
+    <text class="s" x="360" y="487" text-anchor="middle">une todas las escenas</text>
+
+    <!-- 6 Final -->
+    <rect class="bx" x="276" y="540" width="168" height="46" fill="#e7efff" stroke="#2563eb"/>
+    <text class="t" x="360" y="559" text-anchor="middle" style="fill:#1d4ed8">🎬 Video final</text>
+    <text class="s" x="360" y="575" text-anchor="middle">16:9 · ~1 min</text>
+
+    <!-- arrows spine -->
+    <path class="ln" d="M360,60 L360,90" marker-end="url(#arr)"/>
+    <path class="ln" d="M360,140 L360,170" marker-end="url(#arr)"/>
+    <path class="ln" d="M360,220 L360,250" marker-end="url(#arr)"/>
+    <!-- router to branches -->
+    <path class="ln" d="M300,298 C220,322 200,322 187,344" marker-end="url(#arr)"/>
+    <path class="ln" d="M420,298 C500,322 520,322 533,344" marker-end="url(#arr)"/>
+    <text class="lab" x="214" y="322">NO</text>
+    <text class="lab" x="496" y="322">SÍ</text>
+    <!-- branches to concat -->
+    <path class="ln" d="M187,406 C200,432 270,432 300,450" marker-end="url(#arr)"/>
+    <path class="ln" d="M533,406 C520,432 450,432 420,450" marker-end="url(#arr)"/>
+    <!-- concat to final -->
+    <path class="ln" d="M360,498 L360,538" marker-end="url(#arr)"/>
+  </svg>
+  </div>
+
+  <p>Cada etapa guarda sus artefactos en <code>output/&lt;runId&gt;/</code>, así que se puede
+  <b>reanudar</b> cualquier etapa sin repetir las anteriores (idempotente: salta lo ya hecho).
+  La etapa de <b>voz</b> es opcional: por defecto la sintetiza HeyGen; solo se usa ElevenLabs propio
+  si <code>providers.voice=elevenlabs</code>.</p>
+</section>
+
+<section id="arquitectura">
+  <h2>Arquitectura</h2>
+  <p>Todo lo externo está detrás de <b>interfaces + una fábrica</b> (<code>src/providers/factory.ts</code>);
+  el orquestador (<code>src/core/pipeline.ts</code>) no conoce proveedores concretos. Proveedores:</p>
+  <table>
+    <tr><th>Rol</th><th>Proveedor</th><th>Clave</th></tr>
+    <tr><td><span class="pill p-claude">LLM</span> genera el spec</td><td>Claude (Anthropic)</td><td><code>ANTHROPIC_API_KEY</code></td></tr>
+    <tr><td><span class="pill p-img">Imagen</span> avatar en zona</td><td>Nano Banana 2 (Gemini 3 Pro Image)</td><td><code>GOOGLE_API_KEY</code></td></tr>
+    <tr><td><span class="pill p-video">Video fijo</span> talking-head</td><td>HeyGen Avatar IV</td><td><code>HEYGEN_API_KEY</code></td></tr>
+    <tr><td><span class="pill p-video">Video dinámico</span> avatar en movimiento</td><td>Veo 3.1 (Gemini API)</td><td><code>GOOGLE_API_KEY</code></td></tr>
+    <tr><td><span class="pill p-voice">Voz</span> revoz (dinámico)</td><td>ElevenLabs (voice changer)</td><td><code>ELEVENLABS_API_KEY</code></td></tr>
+  </table>
+  <p class="muted">El audio final de cada video lo descarga/ensambla el pipeline; ffmpeg hace el mux y el corte.</p>
+</section>
+
+<section id="rutas">
+  <h2>Dos rutas de render (por escena)</h2>
+  <div class="two">
+    <div class="card">
+      <span class="pill p-video">Talking-head</span>
+      <p>Plano fijo del avatar hablando, con gestos (Avatar IV). Mejor lip-sync, voz consistente y más barato.
+      <b>Es la ruta por defecto.</b></p>
+      <p class="muted">Necesita una imagen base (Nano Banana: avatar en la zona). La voz la pone HeyGen vía <code>heygenVoiceId</code>.</p>
+    </div>
+    <div class="card">
+      <span class="pill p-video">Dinámico</span>
+      <p>Avatar en <b>movimiento</b> (camina, se acerca, se gira…). Se activa cuando la escena tiene el campo
+      <code>motion</code>. Usa Veo + voice changer.</p>
+      <p class="muted">No usa imagen base; Veo parte de la <b>foto de referencia</b> del personaje. La voz real se aplica con ElevenLabs.</p>
+    </div>
+  </div>
+  <p>En un mismo video conviven ambas: el pipeline enruta cada escena según tenga o no <code>motion</code>.</p>
+</section>
+
+<hr>
+
+<section id="setup">
+  <h2>Setup inicial</h2>
+  <pre><code>npm install
+cp .env.example .env                  # poner las API keys
+cp config.example.json config.json    # cliente, personajes, voces
+# colocar imágenes de referencia en Avatars/ (p. ej. elena.jpeg)
+npm run build</code></pre>
+  <p>Requisitos: Node ≥ 18 y <b>ffmpeg/ffprobe</b> en el PATH (para mux, corte y normalización).</p>
+</section>
+
+<section id="comandos">
+  <h2>Comandos</h2>
+  <p>Ejecutar con <code>npm run dev -- &lt;cmd&gt;</code> (desarrollo) o <code>node dist/cli/index.js &lt;cmd&gt;</code> (build).</p>
+  <table>
+    <tr><th>Comando</th><th>Qué hace</th></tr>
+    <tr><td><code>generate</code></td><td>Pipeline completo desde un brief (<code>--brief</code>) o un spec hecho a mano (<code>--spec</code>).</td></tr>
+    <tr><td><code>spec</code></td><td>Solo genera el ProductionSpec (Claude) desde un brief. Útil para revisar el guion antes de gastar.</td></tr>
+    <tr><td><code>images</code></td><td>Genera/resuelve las imágenes base de un run (<code>--run</code>).</td></tr>
+    <tr><td><code>voice</code></td><td>Genera audio por escena (solo si <code>providers.voice=elevenlabs</code>).</td></tr>
+    <tr><td><code>videos</code></td><td>Renderiza los videos por escena (HeyGen + dinámico). Idempotente.</td></tr>
+    <tr><td><code>assemble</code></td><td>Une las escenas de un run (<code>--run</code>) en un solo mp4 (normaliza resolución/fps + concat). <code>generate</code> lo llama solo al final.</td></tr>
+    <tr><td><code>revise</code></td><td>Cambia UNA escena de un run y re-renderiza solo esa + re-monta. Reusa el resto (barato).</td></tr>
+    <tr><td><code>convert</code></td><td>Convierte un spec legacy/v1 al formato v2 (<code>--spec</code> &rarr; <code>--out</code>).</td></tr>
+    <tr><td><code>runs</code></td><td>Lista los runs disponibles en <code>output/</code>.</td></tr>
+  </table>
+
+  <h3>Editar una escena ya generada · <code>revise</code></h3>
+  <p>Cambia algo puntual de una escena sin rehacer el run: parchea el spec, invalida solo lo afectado
+  (vídeo, y la imagen si cambia la zona/personaje o pasa a talking-head), re-renderiza esa escena y
+  re-monta el final. Si la escena comparte <code>base_image</code> con otras, lo <b>separa</b> para no
+  afectarlas.</p>
+  <table>
+    <tr><th>Flag</th><th>Efecto</th></tr>
+    <tr><td><code>--scene &lt;n&gt;</code></td><td>Escena a editar (obligatorio, junto con <code>--run</code>).</td></tr>
+    <tr><td><code>--dialogue "&lt;texto&gt;"</code></td><td>Cambia el diálogo (re-render de esa escena).</td></tr>
+    <tr><td><code>--motion "&lt;texto&gt;"</code></td><td>Cambia el movimiento (convierte la escena en dinámica).</td></tr>
+    <tr><td><code>--make-talking-head</code></td><td>Convierte una dinámica en talking-head.</td></tr>
+    <tr><td><code>--zone &lt;ZONE_id&gt;</code></td><td>Cambia el decorado (regenera la imagen).</td></tr>
+    <tr><td><code>--character &lt;id&gt;</code></td><td>Cambia el personaje (regenera la imagen).</td></tr>
+    <tr><td><code>--expressiveness &lt;low|medium|high&gt;</code></td><td>Energía de gestos (talking-head).</td></tr>
+    <tr><td><code>--regen-image</code></td><td>Regenera la imagen base (talking-head) sin cambiar zona/personaje. Útil cuando la imagen sale con proporciones raras (cabeza/cuerpo) u otro defecto.</td></tr>
+    <tr><td><code>--reroll</code></td><td>Re-tira la escena sin cambios (otra toma; útil para glitches de Veo, ej. el avatar atravesando un mueble).</td></tr>
+  </table>
+
+  <h3>Flags útiles</h3>
+  <table>
+    <tr><th>Flag</th><th>En</th><th>Efecto</th></tr>
+    <tr><td><code>-b, --brief &lt;ruta&gt;</code></td><td>generate / spec</td><td>Brief del curso (Claude genera el spec).</td></tr>
+    <tr><td><code>-s, --spec &lt;ruta&gt;</code></td><td>generate / convert</td><td>Spec hecho a mano (se ingiere tal cual, sin Claude).</td></tr>
+    <tr><td><code>-r, --run &lt;id&gt;</code></td><td>images/voice/videos/assemble/revise</td><td>Run existente sobre la que actuar.</td></tr>
+    <tr><td><code>--limit &lt;n&gt;</code></td><td>todas</td><td>Procesa solo las primeras N escenas (para pruebas baratas).</td></tr>
+    <tr><td><code>--skip-videos</code></td><td>generate</td><td>Genera spec + imágenes + voz, pero no renderiza videos.</td></tr>
+    <tr><td><code>--expressiveness &lt;low|medium|high&gt;</code></td><td>generate/videos</td><td>Fuerza la energía de movimiento (talking-head), pisa el spec.</td></tr>
+    <tr><td><code>--no-motion</code></td><td>generate/videos</td><td>Omite los motion prompts (talking-head más sobrio).</td></tr>
+    <tr><td><code>-c, --config</code> · <code>-o, --output</code></td><td>global</td><td>Ruta de config.json y directorio de salida.</td></tr>
+  </table>
+
+  <h3>Ejemplos</h3>
+  <pre><code># Solo el guion (revisar copy antes de gastar):
+npm run dev -- spec --brief inputs/brief.example.json
+
+# Pipeline completo:
+npm run dev -- generate --brief inputs/brief.example.json
+
+# Prueba barata (3 escenas, sin videos):
+npm run dev -- generate --brief inputs/brief.example.json --limit 3 --skip-videos
+
+# Producir un video desde un spec hecho a mano:
+npm run dev -- generate --spec specs/chatgpt-productividad.v2.json
+
+# Reanudar etapas de un run:
+npm run dev -- runs
+npm run dev -- images --run &lt;runId&gt;
+npm run dev -- videos --run &lt;runId&gt;
+
+# Montar el video final de un run (si no se hizo solo):
+npm run dev -- assemble --run &lt;runId&gt;
+
+# Editar una escena ya generada (re-render solo esa + re-monta):
+npm run dev -- revise --run &lt;runId&gt; --scene 2 --dialogue "Nuevo texto de la escena 2."
+npm run dev -- revise --run &lt;runId&gt; --scene 1 --reroll
+npm run dev -- revise --run &lt;runId&gt; --scene 4 --zone ZONE_9</code></pre>
+</section>
+
+<section id="salida">
+  <h2>Salida y reportes</h2>
+  <pre><code>output/&lt;runId&gt;/
+  manifest.json        estado del run (reanudable)
+  spec.json            el ProductionSpec usado
+  image-prompts.md     prompt de cada imagen + imagen de referencia adjunta
+  timings.md           tiempos por escena (imagen + video + subtotal) y total
+  images/              IMG_x.png  (base_images de escenas talking-head)
+  audio/               scene-XX.mp3  (solo si voice=elevenlabs)
+  videos/              scene-XX.mp4  (un clip por escena)</code></pre>
+  <p>El <b>corte final 1080p</b> se arma normalizando y concatenando los clips (las dinámicas de Veo
+  salen en 720p y se escalan a 1920×1080).</p>
+</section>
+
+<hr>
+
+<section id="env">
+  <h2>Parámetros · <code>.env</code></h2>
+  <table>
+    <tr><th>Variable</th><th>Para</th></tr>
+    <tr><td><code>ANTHROPIC_API_KEY</code></td><td>Claude (generar el spec).</td></tr>
+    <tr><td><code>GOOGLE_API_KEY</code></td><td>Nano Banana 2 (imágenes) <b>y</b> Veo 3.1 (video dinámico). Requiere acceso/billing de Veo.</td></tr>
+    <tr><td><code>HEYGEN_API_KEY</code></td><td>HeyGen Avatar IV (talking-head). Crear la key como tipo "Desarrollador".</td></tr>
+    <tr><td><code>ELEVENLABS_API_KEY</code></td><td>Voice changer (escenas dinámicas). La key necesita el permiso <b>speech_to_speech</b>.</td></tr>
+  </table>
+</section>
+
+<section id="config">
+  <h2>Parámetros · <code>config.json</code></h2>
+  <p>Config estable del cliente. Está en <code>.gitignore</code> (usa <code>config.example.json</code> como plantilla).</p>
+  <table>
+    <tr><th>Clave</th><th>Descripción</th></tr>
+    <tr><td><code>client</code></td><td>Nombre de la empresa (aparece como <code>video.client</code>).</td></tr>
+    <tr><td><code>zonesPath</code></td><td>Ruta a la librería de zonas (default <code>zones.json</code>).</td></tr>
+    <tr><td><code>providers</code></td><td><code>llm</code>=claude · <code>voice</code>=heygen|elevenlabs · <code>video</code>=heygen · <code>image</code>=none|nano-banana.</td></tr>
+    <tr><td><code>image.model</code></td><td><code>gemini-3-pro-image-preview</code> (Nano Banana 2) o <code>gemini-2.5-flash-image</code>.</td></tr>
+    <tr><td><code>video.aspectRatio</code> / <code>resolution</code></td><td><code>16:9</code> / <code>1080p</code>.</td></tr>
+    <tr><td><code>video.defaultExpressiveness</code></td><td>Energía de movimiento talking-head (Avatar IV): <code>high</code> por defecto (<code>low</code> sale rígido).</td></tr>
+    <tr><td><code>video.dynamic.provider</code></td><td>Motor de dinámicas: <code>gemini</code> (Veo directo) · <code>fal</code> (Veo vía fal.ai) · <code>heygen-shot</code> (HeyGen Cinematic Avatar, voz nativa del look).</td></tr>
+    <tr><td><code>video.dynamic.veoModel</code> / <code>falModel</code></td><td>Modelo de Veo (gemini) / de fal (fast = barato, std = calidad). Solo aplica con su provider.</td></tr>
+    <tr><td><code>video.dynamic.stsModel</code></td><td>Modelo de voice changer (gemini/fal): <code>eleven_multilingual_sts_v2</code>.</td></tr>
+    <tr><td><code>video.dynamic.shotResolution</code></td><td>Resolución de HeyGen Shots: <code>720p</code> (barato) o <code>1080p</code>. Solo con <code>provider="heygen-shot"</code>.</td></tr>
+    <tr><td><code>constraints</code></td><td><code>minScenes</code>/<code>maxScenes</code> (8–10) y <code>wordsPerSecond</code>.</td></tr>
+    <tr><td><code>characters[]</code></td><td>Roster: <code>id, name, gender, ageRange, wardrobe, referenceImagePath, heygenVoiceId, elevenLabs.voiceId, heygenLookId</code> (este último para <code>heygen-shot</code>).</td></tr>
+  </table>
+  <div class="note">Detalle completo de las voces en la sección <a href="#voces">Voces</a>.</div>
+</section>
+
+<section id="voces">
+  <h2>Voces</h2>
+  <p>Qué voz suena en cada escena lo decide <code>providers.voice</code>. Cada personaje tiene su voz en
+  <code>config.json</code> (los <code>voice_id</code> concretos viven ahí, gitignored; aquí van por nombre).</p>
+
+  <h3>Modo actual: <code>providers.voice = "elevenlabs"</code> (voz unificada)</h3>
+  <p>Todas las escenas usan la <b>misma voz de ElevenLabs</b> del personaje &rarr; identidad consistente.</p>
+  <table>
+    <tr><th>Tipo de escena</th><th>Motor de voz</th><th>Modelo</th><th>Cómo</th></tr>
+    <tr><td><b>Talking-head</b> (HeyGen)</td><td>ElevenLabs <b>TTS</b> (texto&rarr;voz)</td><td><code>eleven_multilingual_v2</code></td><td>se genera el audio y se le pasa a HeyGen, que solo anima + lip-sync.</td></tr>
+    <tr><td><b>Dinámica</b> (Veo/fal)</td><td>ElevenLabs <b>STS / voice changer</b></td><td><code>eleven_multilingual_sts_v2</code></td><td>convierte el audio genérico de Veo a la voz real (preserva timing &rarr; mantiene lip-sync).</td></tr>
+  </table>
+  <p class="muted">Ambas usan la misma <code>elevenLabs.voiceId</code> del personaje, así que es la misma persona.
+  Matiz: TTS y STS no suenan idénticos (el STS conserva la prosodia/acento del audio de Veo) &rarr; ver
+  <a href="#registro">Registro</a>; la solución de raíz es Seedance con <code>audio_urls</code> (lip-sync a la voz TTS, sin STS).</p>
+
+  <h3>Mapeo por personaje</h3>
+  <table>
+    <tr><th>Personaje</th><th>Voz ElevenLabs</th><th>Voz HeyGen (modo alternativo)</th></tr>
+    <tr><td>Elena</td><td><b>Carolina</b></td><td>voz HeyGen propia</td></tr>
+    <tr><td>Marcos</td><td><b>Tony</b></td><td>voz HeyGen propia</td></tr>
+    <tr><td>Sofía</td><td><b>Cristina</b></td><td>voz HeyGen propia</td></tr>
+  </table>
+
+  <h3>Modo alternativo: <code>providers.voice = "heygen"</code></h3>
+  <p>Las talking-head usan la <b>voz nativa de HeyGen</b> (<code>heygenVoiceId</code>) y las dinámicas siguen
+  con ElevenLabs STS &rarr; resultan <b>dos voces distintas</b> en el mismo vídeo (inconsistencia). Por eso
+  el default de producción es <code>"elevenlabs"</code>.</p>
+
+  <div class="note"><b>Permisos de la API key de ElevenLabs:</b> necesita <code>text_to_speech</code> (talking-head)
+  y <code>speech_to_speech</code> (dinámicas). Faltando cualquiera, la etapa correspondiente da <code>401 missing_permissions</code>.</div>
+  <p class="muted">Ajustes por personaje en <code>elevenLabs.params</code> (stability/similarity_boost/style/speaker_boost);
+  actualmente <code>0.33 / 0.75 / 0 / true</code>.</p>
+</section>
+
+<section id="brief">
+  <h2>Parámetros · brief (entrada por curso)</h2>
+  <table>
+    <tr><th>Campo</th><th>Descripción</th></tr>
+    <tr><td><code>course_category</code></td><td>Categoría del curso (obligatorio).</td></tr>
+    <tr><td><code>current_transcript</code></td><td><b>Entrada principal:</b> el transcript del video actual. Claude lo reescribe (vendedor) y estructura.</td></tr>
+    <tr><td><code>key_message</code> / <code>talking_points</code></td><td>Mensaje y puntos clave que reforzar (opcional, complementan el transcript).</td></tr>
+    <tr><td><code>character_ids</code></td><td>Qué avatares participan (ids de config).</td></tr>
+    <tr><td><code>protagonist</code></td><td>Avatar protagonista (lleva el gancho y el CTA).</td></tr>
+    <tr><td><code>max_dynamic_scenes</code></td><td>Cuántas escenas dinámicas (default <b>6</b>): siempre apertura + cierre + repartidas.</td></tr>
+    <tr><td><code>purpose</code> / <code>language</code> / <code>version</code> / <code>course_url</code></td><td>Metadatos del video.</td></tr>
+  </table>
+  <div class="note"><b>Regla de oro del copy:</b> Claude hace el guion más vendedor <b>sin inventar datos</b>
+  — mantiene cifras, "bonificable por Fundae", años y nombres reales del transcript.</div>
+</section>
+
+<section id="zones">
+  <h2>Parámetros · <code>zones.json</code> (librería de escenarios)</h2>
+  <p>Catálogo compartido de <b>15 zonas</b> (id &rarr; descripción) reutilizable en todos los videos del cliente
+  (oficina, sala de vidrio, corredor con skyline, recepción, set de marca…). Claude referencia zonas por id;
+  el pipeline resuelve la descripción. Mantener fija da consistencia de marca y variedad entre videos.</p>
+  <div class="note"><b>Texto de marca:</b> la IA <b>no</b> rotula texto exacto de forma fiable
+  ("CIBERAULA" sale deformado). Las zonas de marca se dejan con la pared <b>limpia</b> y el logo real
+  se superpone como <b>overlay en la Etapa 2</b>.</div>
+
+  <h3>Catálogo visual de zonas</h3>
+  <!-- ZONES:START (generado por scripts/gen-zone-previews.mjs --sync; no editar a mano) -->
+  <div class="zone-grid">
+    <figure class="zone"><img src="../zone-previews/ZONE_1.png" alt="ZONE_1" loading="lazy"><figcaption><b>ZONE_1</b> — open-plan workspace with rows of modern desks, large monitors and ergonomic chairs, and several real coworkers actively working in the background; the office is clearly visible with only a light, natural depth of field (no heavy blur), conveying a busy real company</figcaption></figure>
+    <figure class="zone"><img src="../zone-previews/ZONE_2.png" alt="ZONE_2" loading="lazy"><figcaption><b>ZONE_2</b> — glass-walled meeting room with a long light oak table and leather chairs; through the glass wall an open-plan office with people working is clearly visible, only gently soft (no heavy blur)</figcaption></figure>
+    <figure class="zone"><img src="../zone-previews/ZONE_3.png" alt="ZONE_3" loading="lazy"><figcaption><b>ZONE_3</b> — casual breakout seating area with a low beige sofa, oak coffee table, a large indoor monstera plant and a warm pendant light, with a couple of colleagues chatting in the background, lively and approachable</figcaption></figure>
+    <figure class="zone"><img src="../zone-previews/ZONE_4.png" alt="ZONE_4" loading="lazy"><figcaption><b>ZONE_4</b> — floor-to-ceiling window corridor overlooking a city skyline with subtle daylight haze and polished concrete floor; the skyline is recognizable with only a light depth of field, deep architectural perspective</figcaption></figure>
+    <figure class="zone"><img src="../zone-previews/ZONE_5.png" alt="ZONE_5" loading="lazy"><figcaption><b>ZONE_5</b> — warm executive office with light oak wood paneling, a leather armchair, a shelf with books and a small plant, with a colleague visible working through a glass partition, intimate but not empty, warmer color temperature</figcaption></figure>
+    <figure class="zone"><img src="../zone-previews/ZONE_6.png" alt="ZONE_6" loading="lazy"><figcaption><b>ZONE_6</b> — standing high-table area near a window with brushed steel high stools and exposed industrial ceiling, with coworkers active in the clearly visible background, modern dynamic energy</figcaption></figure>
+    <figure class="zone"><img src="../zone-previews/ZONE_7.png" alt="ZONE_7" loading="lazy"><figcaption><b>ZONE_7</b> — reception lobby with a clean polished concrete feature wall in the background (kept plain, with empty space for a logo to be added in post), a large healthy indoor plant, warm spot lighting, and a couple of people at the reception desk to keep it lively. The feature wall stays clean. No text or lettering on the wall.</figcaption></figure>
+    <figure class="zone"><img src="../zone-previews/ZONE_8.png" alt="ZONE_8" loading="lazy"><figcaption><b>ZONE_8</b> — modern training classroom with several attendees seated and engaged, a large interactive screen on the back wall, warm wood accents, an active learning atmosphere; background clearly visible with only a light depth of field</figcaption></figure>
+    <figure class="zone"><img src="../zone-previews/ZONE_9.png" alt="ZONE_9" loading="lazy"><figcaption><b>ZONE_9</b> — warm collaborative co-working area with large shared wooden tables, several people working together on laptops, and big windows with soft daylight; minimal greenery (at most one small plant); lively real office, background clearly visible with light depth of field</figcaption></figure>
+    <figure class="zone"><img src="../zone-previews/ZONE_10.png" alt="ZONE_10" loading="lazy"><figcaption><b>ZONE_10</b> — modern library and study nook with floor-to-ceiling wooden bookshelves full of books, warm reading lamps and a person reading in a comfortable armchair, cozy focused mood, background clearly visible</figcaption></figure>
+    <figure class="zone"><img src="../zone-previews/ZONE_11.png" alt="ZONE_11" loading="lazy"><figcaption><b>ZONE_11</b> — bright open-plan office beside large windows, with clusters of modern desks, monitors and ergonomic chairs and several coworkers actively working in the background; light, airy and busy, minimal greenery, background clearly visible with light depth of field</figcaption></figure>
+    <figure class="zone"><img src="../zone-previews/ZONE_12.png" alt="ZONE_12" loading="lazy"><figcaption><b>ZONE_12</b> — relaxed office common area and lounge with comfortable mismatched seating, a small coffee point and a few people chatting; minimal greenery (at most one small plant); warm, lived-in and real (NOT a grand or perfect showcase atrium), light depth of field</figcaption></figure>
+    <figure class="zone"><img src="../zone-previews/ZONE_13.png" alt="ZONE_13" loading="lazy"><figcaption><b>ZONE_13</b> — collaborative strategy area with a large glass wall covered in diagrams, charts and sticky notes (clearly visible, only gently soft), a clean desk in the foreground and teammates collaborating in the background, planning and ideas atmosphere</figcaption></figure>
+    <figure class="zone"><img src="../zone-previews/ZONE_14.png" alt="ZONE_14" loading="lazy"><figcaption><b>ZONE_14</b> — casual cafeteria coffee corner with a barista and a few people at the counter, warm wood textures, hanging plants and soft ambient light, approachable and friendly</figcaption></figure>
+    <figure class="zone"><img src="../zone-previews/ZONE_15.png" alt="ZONE_15" loading="lazy"><figcaption><b>ZONE_15</b> — minimalist studio set with a clean deep navy backdrop wall (plain, with empty negative space for a logo to be added in post), soft key light and gentle vignette, clean and premium for closing or CTA shots. No text or lettering on the wall.</figcaption></figure>
+  </div>
+  <!-- ZONES:END -->
+  <div class="note"><b>Mantener el catálogo al día (automatizado):</b> la galería de arriba se genera entre
+  los marcadores <code>&lt;!-- ZONES:START/END --&gt;</code> desde <code>zones.json</code> (no editar a mano).
+  Tras cambiar zonas:
+  <pre><code># regenera las 15 imágenes + sincroniza la galería de esta guía
+node scripts/gen-zone-previews.mjs
+
+# regenera solo unas zonas concretas (+ sincroniza)
+node scripts/gen-zone-previews.mjs ZONE_9 ZONE_11
+
+# solo sincroniza el texto/galería de la guía (no genera imágenes, no gasta)
+node scripts/gen-zone-previews.mjs --sync</code></pre>
+  Así la imagen y la descripción de cada zona quedan siempre coherentes.</div>
+</section>
+
+<section id="spec">
+  <h2>El ProductionSpec (v2)</h2>
+  <p>Es el guion de producción que genera Claude (o se edita a mano). Estructura plana:</p>
+  <pre><code>{
+  "schema_version": 2,
+  "video": { "client", "course_category", "aspect_ratio", "language", ... },
+  "characters": { "&lt;id&gt;": { id, name, gender, age_range, wardrobe } },   // solo creativo
+  "zones": {},                                  // normalmente vacío (vienen de zones.json)
+  "base_images": { "IMG_1": { character, zone, framing, used_in_scenes:[...] } },
+  "scenes": [{
+    "id": 1, "base_image": "IMG_1", "dialogue": "...",
+    "tone", "emphasis_words": [...],
+    "motion_prompt": "...",      // gesto talking-head
+    "expressiveness": "medium",  // energía talking-head
+    "motion": "...",             // PRESENTE = escena DINÁMICA (Veo); su texto describe el movimiento
+    "estimated_seconds": 4,
+    "overlays": [...], "persistent_overlays": [...]   // Etapa 2
+  }],
+  "brand_assets": {}
+}</code></pre>
+  <table>
+    <tr><th>Campo de escena</th><th>Nota</th></tr>
+    <tr><td><code>base_image</code></td><td>Referencia a la toma (de ahí se derivan personaje, zona y encuadre).</td></tr>
+    <tr><td><code>motion</code></td><td><b>Si está presente, la escena es dinámica.</b> Su texto va al prompt de Veo (estilo plano medio: "entra caminando, se centra, abre brazos"…). Sin <code>motion</code> = talking-head.</td></tr>
+    <tr><td><code>motion_prompt</code> / <code>expressiveness</code></td><td>Solo para talking-head (HeyGen).</td></tr>
+    <tr><td><code>overlays</code> / <code>transition_*</code> / <code>camera_movement</code></td><td>Se conservan para la <b>Etapa 2</b> (composición); no afectan el render del avatar. Tiempos de overlay relativos al inicio de la escena.</td></tr>
+  </table>
+  <p class="muted">Acepta también el formato legacy/v1 (anidado, <code>scene_id</code>, <code>heygen_motion_prompt</code>): se adapta solo a v2 con <code>src/core/legacyAdapter.ts</code> / el comando <code>convert</code>.</p>
+</section>
+
+<hr>
+
+<section id="dinamico">
+  <h2>Receta de escenas dinámicas</h2>
+  <p>Cuando una escena tiene <code>motion</code>, el motor dinámico hace:</p>
+  <div class="flow">
+    <div class="step"><b>1 · Veo 3.1</b><small>reference-to-video: foto del personaje + prompt (movimiento + diálogo) &rarr; video con lip-sync (voz genérica)</small></div>
+    <div class="step"><b>2 · Voice changer</b><small>ElevenLabs STS revoz a la voz real, preservando el timing (el lip-sync sigue cuadrando)</small></div>
+    <div class="step"><b>3 · Mux + trim</b><small>swap de audio y recorte automático de la cola muda (Veo da clips de 8s fijos)</small></div>
+  </div>
+  <div class="ok"><b>Clave de consistencia (actualizado):</b> el motor por defecto en <code>fal</code> es
+  <b>image-to-video</b> partiendo de la <b>imagen base de la escena</b> (mismo look, generada con Nano Banana).
+  Esto <b>pronuncia bien las siglas</b> (ChatGPT, etc.) — al contrario que <code>reference-to-video</code>, que
+  las dice mal. La advertencia antigua ("image-to-video distorsiona la cara") aplicaba a arrancar desde un frame
+  lejano o de baja calidad; con la imagen base nítida y bien encuadrada no ocurre. El <code>motion</code> admite
+  coreografía rica, pero <b>el frame inicial manda</b> (ver <a href="#aprendizajes">Aprendizajes clave</a>).</div>
+  <p>El nº de escenas dinámicas se fija con <code>dynamic_ratio</code> (≈mitad por defecto; tope opcional
+  <code>max_dynamic_scenes</code>); el reparto garantiza apertura + cierre dinámicas, con movimiento variado por escena.</p>
+  <div class="note"><b>Motor alternativo (<code>video.dynamic.provider</code>):</b> los 3 pasos de arriba son la ruta
+  <b>Veo</b> (<code>gemini</code> directo o <code>fal</code>). La 3ª opción, <b>HeyGen Shots</b> (<code>heygen-shot</code>),
+  usa un flujo distinto: el avatar (un <b>look</b> registrado) habla con su <b>voz nativa</b> y lip-sync, <b>sin</b>
+  voice changer ni mux. Ver <a href="#shots-eval">Prueba HeyGen Shots</a>.</div>
+</section>
+
+<section id="aprendizajes">
+  <h2>Aprendizajes clave (escenas dinámicas cinemáticas)</h2>
+  <p class="muted">Hallazgos consolidados produciendo el vídeo <em>all-dynamic</em> de Ciberaula. Aplican a cualquier curso.</p>
+
+  <div class="ok"><b>1 · El frame inicial manda en image-to-video.</b> El movimiento se anima <b>desde</b> la imagen base.
+  Para un travelling real (recorrer una mesa, cámara que entra por una puerta, levantarse y sentarse) el frame de
+  partida debe estar <b>compuesto para ese movimiento</b>: si quieres que camine a lo largo de la mesa hacia cámara,
+  arráncalo <b>en el lateral</b> de la mesa (no al fondo del centro, o "empuja"/deforma la mesa); si quieres "se gira
+  al notar la cámara", arráncalo <b>trabajando de lado</b>, no de frente. Encuádralo con el campo
+  <code>base_image.framing</code> — el generador ahora <b>respeta un framing propio</b> y no fuerza "plano medio de
+  frente". Movimiento mínimo desde un plano medio frontal = <b>parece talking-head</b>.</div>
+
+  <div class="warn"><b>2 · <code>revise</code> NO regenera la imagen base si el fichero ya existe.</b> Para cambiar
+  framing/zona de una escena dinámica hay que <b>borrar <code>images/IMG_X.png</code></b> a mano para forzar la
+  regeneración; si no, anima el frame antiguo (síntoma: el cambio "no se aplica").</div>
+
+  <div class="note"><b>3 · Prompts de movimiento cinemáticos.</b> Combinar <b>cámara</b> (dolly, arco, travelling
+  lateral, grúa, push-in) + <b>acción del sujeto</b> + <b>desambiguar primer plano vs fondo</b>: el modelo puede
+  asignar la acción a una persona del fondo. Decir explícito <em>"the FOREGROUND person is the only one who moves;
+  coworkers in the background stay seated and do NOT move"</em>. Para cierres/CTA en estudio, omitir la cláusula de
+  "coworkers" (la zona estudio ya lo gestiona).</div>
+
+  <div class="warn"><b>4 · Duración: los clips dinámicos (Veo/fal) son ~8s fijos.</b> Frases largas se atropellan o
+  cortan; los talking-head (HeyGen Avatar IV) sí admiten frases largas. Al convertir <b>TH → dinámica</b>, acortar el
+  diálogo a <b>≈16–20 palabras</b> por escena para que entre natural en ~8s.</div>
+
+  <div class="ok"><b>5 · Truco de audio (visual bueno + pronunciación mala).</b> Si una toma se ve bien pero
+  pronuncia mal, se puede <b>muxear el audio de una toma anterior</b> sobre el vídeo nuevo; si duran casi igual el
+  lip-sync aguanta: <code>ffmpeg -i video.mp4 -i audio.mp4 -map 0:v -map 1:a -c:v copy -shortest out.mp4</code>.</div>
+
+  <div class="note"><b>6 · Pronunciación de marcas/siglas → reescribir el token.</b> HeyGen decía
+  <em>"cibarala"</em>; con <b>"Ciber Aula"</b> (dos palabras) lo pronuncia bien. Caso conocido: <b>ChatGPT</b> sale
+  bien en image-to-video y mal en reference-to-video.</div>
+
+  <div class="ok"><b>7 · Dúo de avatares con HeyGen Cinematic Avatar (validado).</b> Pasar <code>avatar_id</code> como
+  <b>array</b> <code>[look1, look2]</code>; cada uno habla con su <b>voz nativa</b> (sin STS). En el prompt se asigna
+  la línea de cada uno y se piden <b>entradas por los laterales</b> hacia el centro, en ambiente de oficina. En el
+  spec se documenta con el campo <code>cast: [{character, dialogue}]</code> (el catálogo lo muestra como
+  <b>DÚO</b> con la línea de cada uno).</div>
+
+  <div class="warn"><b>8 · Trampa al copiar un run (<code>cp -r</code>).</b> El <code>manifest.json</code> guarda
+  <code>videos[].filePath</code> <b>absolutos al run origen</b>; <code>assemble</code> seguiría usando los clips
+  viejos (síntoma: "sigue saliendo la escena antigua"). Tras copiar: <b>reescribir esos filePaths al run destino</b>
+  y, si quieres que el catálogo lo tome como representante del curso, actualizar también <code>createdAt</code>.</div>
+
+  <div class="note"><b>9 · Glitch en el último frame de clips dinámicos.</b> A veces el último frame es una imagen
+  distinta. Recortar los últimos frames y remontar:
+  <code>ffmpeg -i in.mp4 -vf "select=lt(n\,N-5),setpts=N/24/TB" -af "atrim=end=DUR" ...</code>.</div>
+
+  <div class="note"><b>10 · Saldo.</b> Cada re-tirada en fal (~$1.35) y en HeyGen Cinematic (~$5, reserva ~$10)
+  cuesta dinero real; iterar movimiento/encuadre consume rápido. Mantener un colchón antes de lanzar lotes.</div>
+</section>
+
+<section id="prompts">
+  <h2>Prompts del sistema</h2>
+  <p class="muted">Los prompts que usa el pipeline (estado actual). Las partes entre <code>{llaves}</code> se
+  rellenan en runtime. Fuente: <code>src/prompts/scenePlanner.ts</code> y <code>src/core/pipeline.ts</code>.</p>
+
+  <h3>1. Claude — Guion (system prompt)</h3>
+  <pre><code>Eres un director creativo y COPYWRITER experto en spots publicitarios cortos con avatares que hablan a cámara. Tu objetivo es CONVERSIÓN: tomas el mensaje o el transcript y lo haces más vendedor (gancho fuerte en los primeros segundos, beneficios concretos, prueba social, urgencia, CTA claro) SIN inventar datos ni promesas falsas. Generas un GUION DE PRODUCCIÓN en JSON estricto. Devuelves SOLO JSON válido, sin markdown, sin ```.</code></pre>
+
+  <h3>2. Claude — Guion (user prompt: encargo + reglas)</h3>
+  <p class="muted">Estructura del mensaje de usuario; <code>{ficha}</code>, <code>{personajes}</code>, <code>{zonas}</code> se inyectan dinámicamente.</p>
+  <pre><code># Encargo
+Crea el guion de producción de un video promocional para "{client}" sobre el curso
+"{course_category}". Objetivo: {purpose}. Idioma de los textos: {language}.
+{mensaje_clave?}
+
+# Ficha del curso (FUENTE PRINCIPAL — extrae de aquí los DATOS REALES: temario,
+duración, precio, Fundae, modalidad, público objetivo, certificación, estadísticas; NO inventes)
+"""{texto extraído de source_url}"""
+
+# Transcript del video actual (APOYO opcional para el tono; NO lo copies, prioriza la ficha)
+"""{current_transcript?}"""
+
+# Tu trabajo
+1) A partir de la FICHA del curso (y el transcript de apoyo si lo hay), redacta un guion VENDEDOR:
+   gancho en los primeros 2-3 segundos, beneficios concretos, prueba social, urgencia y un CTA
+   accionable. Extrae y USA los datos reales de la ficha (duración, "bonificable por Fundae",
+   temario, modalidad, público, certificación, estadísticas) — NO inventes datos ni promesas.
+2) Estructura ese guion en escenas (formato v2), repartiendo las líneas entre los personajes.
+
+# Puntos a comunicar (úsalos además de la ficha)
+{talking_points}
+
+# Personajes disponibles (usa SOLO estos ids; reparte con criterio)
+{personajes}
+- PROTAGONISTA: "{protagonist}" lleva el peso (mayoría de escenas + gancho + CTA).
+
+# Zonas disponibles (LIBRERÍA — referencia por id; NO inventes zonas)
+{zonas}
+
+# Reglas (formato v2)
+- Entre {min} y {max} escenas. Prefiere MENOS escenas y más ricas: 1 a 3 frases por escena.
+- EVITA REDUNDANCIA (dura): NO repitas zona; nunca dos escenas similares (menos adyacentes).
+  Si dos ideas caen en el mismo escenario, FÚNDELAS en una. No mismo personaje en escenas seguidas.
+- La duración la marca el diálogo (~{wordsPerSecond} palabras/seg). Talking-head puede ser larga;
+  una DINÁMICA debe caber en ~8s (≈18-20 palabras); si necesita más, hazla talking-head.
+- CLARIDAD TTS: evita choque de vocales idénticas ("a automatizar" → "a poner en marcha"),
+  anglicismos ("copy" → "textos") y siglas sueltas de 2 letras; usa puntuación natural.
+- Cada zona se usa COMO MÁXIMO una vez. base_images: no crees dos casi idénticos.
+- ESCENAS DINÁMICAS (motor Veo): ~la MITAD; diseña acción con movimiento real (camina, se acerca,
+  entra en plano); repártelas; OBLIGATORIO que la PRIMERA (gancho) y la ÚLTIMA (CTA) sean dinámicas.
+- "motion" (inglés, conciso, DISTINTO por escena), estilo plano medio favorecedor.
+- "motion_prompt" + "expressiveness" (low|medium|high) solo para talking-head.
+- NO describas la cara del personaje (viene de su imagen de referencia).
+
+# Formato de salida (JSON EXACTO) … responde SOLO con ese JSON.</code></pre>
+
+  <h3>3. Imagen base — Nano Banana (talking-head)</h3>
+  <p class="muted"><code>buildBaseImagePrompt</code> — la foto del avatar se adjunta aparte como referencia.</p>
+  <pre><code>Coloca a la persona de la imagen de referencia adjunta como el avatar protagonista de la escena.
+Mantén EXACTAMENTE su rostro, peinado y rasgos; no cambies su identidad.
+Entorno: {zona}. Encuadre: {framing}. Vestuario: {wardrobe}.
+Encuádralo en plano medio (del pecho hacia arriba), erguido y de frente a cámara, con proporciones
+humanas naturales (cabeza proporcional al cuerpo). Manos relajadas y libres, sin sostener objetos.
+Intégralo de forma realista en el entorno. Composición horizontal {16:9}, avatar a cámara.</code></pre>
+
+  <h3>4. Escena dinámica — Veo reference-to-video</h3>
+  <p class="muted"><code>buildDynamicPrompt</code> — el retrato del avatar va como imagen de referencia.</p>
+  <pre><code>The person from the reference image {motion}, speaking directly to the camera.
+Keep her exact face, hair and appearance ({wardrobe}).
+Setting: {zona}.
+She says, in Spanish (Spain accent): "{dialogue}"
+Cinematic corporate promo, realistic, {16:9}, smooth motion.
+Do NOT render any on-screen text, captions, subtitles, numbers or graphics.</code></pre>
+
+  <h3>5. HeyGen Shots — Cinematic Avatar (INTEGRADO · <code>buildShotPrompt</code>)</h3>
+  <p class="muted">Provider <code>heygen-shot</code> integrado en el seam (<code>src/core/pipeline.ts</code> &rarr;
+  <code>buildShotPrompt</code> + <code>HeyGenShotProvider</code>). <b>Regla de oro</b>: cara a cámara durante el habla
+  (camina HACIA la cámara / cámara de frente en movimiento), nunca de perfil mientras habla.</p>
+  <pre><code>A {edad}-year-old {gender} in {wardrobe} walks TOWARD the camera at a relaxed, confident pace
+through {zona}, looking directly into the lens and speaking the whole time.
+The camera dollies smoothly BACKWARD, staying in front at eye level, keeping the face centered.
+(opcional: se sienta sin perder el contacto visual, con un push-in cinematográfico).
+He/She says, in Spanish (Spain accent): "{dialogue}"
+His/Her mouth moves in sync with the speech at all times. Cinematic corporate promo, smooth motion.
+Do not render any on-screen text.
+— La voz la pone el LOOK de HeyGen (voz nativa ES configurada); no se pasa por API.</code></pre>
+</section>
+
+<section id="gotchas">
+  <h2>Gotchas (cosas a tener en cuenta)</h2>
+  <ul>
+    <li><b>Texto de marca</b> &rarr; va como overlay en post, no generado por IA (sale deformado).</li>
+    <li><b>Cuota de Veo es por modelo</b> &rarr; si <code>veo-3.1-generate-preview</code> da 429, usar <code>veo-3.1-fast-generate-preview</code> (cuota aparte). HeyGen es facturación aparte.</li>
+    <li><b>Límites reales (Gemini API, Tier 1) medidos 2026-06-16</b> &rarr; <b>Veo</b> (fast y standard): solo <b>~2 RPM / ~10 generaciones al día</b> cada uno &rArr; da para ~2-5 videos/día como mucho. <b>Por eso en producción usamos <a href="https://fal.ai">fal.ai</a> para Veo</b> (<code>video.dynamic.provider="fal"</code>), que no tiene ese tope diario; alternativa: subir a Tier 2. Las <b>imágenes</b> van holgadas en Google: Nano Banana Pro ~20 RPM / ~200 RPD, Flash ~500 RPM / 2.000 RPD.</li>
+    <li><b>503 ≠ 429</b> &rarr; <code>503 UNAVAILABLE</code> = el modelo está saturado del lado de Google (transitorio, se <b>reintenta</b>); <code>429 RESOURCE_EXHAUSTED</code> = superaste tu cuota (RPM/TPM/RPD: por minuto / tokens por minuto / por día), NO se arregla reintentando. El modelo Pro de imagen dio 503 aun con cuota de sobra → de ahí el fallback a Flash.</li>
+    <li><b>Veo genera clips de 8s fijos</b> &rarr; el motor recorta la cola muda automáticamente (silencio final).</li>
+    <li><b>Resolución mixta</b> (Veo 720p, HeyGen 1080p) &rarr; el corte final normaliza todo a 1920×1080.</li>
+    <li><b>Permiso ElevenLabs</b> &rarr; la API key debe tener <b>speech_to_speech</b> ("De voz a voz → Acceso").</li>
+    <li><b>Duración</b> &rarr; la marca el diálogo (no se fija a 45-50s exactos); apunta a ~60-75s.</li>
+  </ul>
+</section>
+
+<section id="registro">
+  <h2>Registro de problemas / cosas a vigilar</h2>
+  <p class="muted">Bitácora de lo que va apareciendo durante la producción, para no perder el contexto.</p>
+  <table>
+    <thead><tr><th>Fecha</th><th>Problema</th><th>Causa</th><th>Estado / mitigación</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>2026-06-18</td>
+        <td><b>Feedback del cliente sobre los fondos</b>: (1) demasiado <b>desenfoque</b> de lente; (2) ambientes
+          <b>fríos/vacíos</b> — prefiere oficinas <b>con gente</b> trabajando (más vivas).</td>
+        <td>Las descripciones de zonas y los prompts forzaban "softly blurred / soft blur" y muchos sets sin
+          personas; el modelo además tiende a un bokeh fuerte de retrato.</td>
+        <td><b>Resuelto.</b> <code>zones.json</code> reescrito (gente/vida en los entornos, "lightly out of
+          focus / clearly visible" en vez de blur fuerte; zonas de marca 7 y 15 se mantienen limpias para el
+          logo). Prompts de imagen base y dinámica: <b>profundidad de campo LIGERA</b> (fondo nítido, sin bokeh
+          fuerte) + <b>ambiente vivo con compañeros</b>. Catálogo de zonas regenerado.</td>
+      </tr>
+      <tr>
+        <td>2026-06-17</td>
+        <td><b>Cabeza desproporcionada respecto al cuerpo</b> en una imagen base (talking-head).</td>
+        <td>La <b>pose sentada inclinada hacia cámara</b> (apoyada en la mesa) provoca escorzo y agranda la
+          cabeza; además Nano Banana tiene cierta deriva del ratio cabeza-cuerpo al generar el cuerpo. Las
+          imágenes con la persona <b>de pie</b> salían bien.</td>
+        <td><b>Resuelto.</b> El prompt base ahora pide <b>proporciones naturales</b> y <b>postura erguida de
+          frente, sin inclinarse/escorzos</b> (plano medio). Imagen regenerada con <code>revise --regen-image</code>
+          (flag nuevo) + re-render de la escena.</td>
+      </tr>
+      <tr>
+        <td>2026-06-15</td>
+        <td><b>Acento inconsistente en escenas dinámicas</b> &rarr; algunas líneas del avatar suenan con
+          acento latino/mexicano y otras con acento de España.</td>
+        <td>El acento lo genera <b>Veo</b> al crear la línea (varía por clip). El voice-changer (STS)
+          conserva en parte la entonación/acento del audio de entrada, así que se filtra cuando
+          <code>similarity_boost</code> es bajo.</td>
+        <td><b>Asumido por ahora.</b> Se usan los valores manuales del cliente
+          (<code>stability 0.33</code> / <code>similarity_boost 0.75</code>). Si hace falta más
+          consistencia: subir <code>similarity_boost</code> (≈0.9) o, como plan B, forzar acento de
+          España en el prompt de Veo, o migrar a <b>TTS (ElevenLabs) + lip-sync</b> (acento perfecto siempre).</td>
+      </tr>
+      <tr>
+        <td>2026-06-15</td>
+        <td><b>Cambio brusco de tono</b> dentro de una misma escena dinámica (p. ej. Marcos #10).</td>
+        <td><code>stability</code> baja en el STS &rarr; la voz "salta" de tono.</td>
+        <td>Mitigable subiendo <code>stability</code> (≈0.6–0.7). Se mantiene 0.33 por decisión del
+          cliente; vigilar si reaparece.</td>
+      </tr>
+      <tr>
+        <td>2026-06-15</td>
+        <td>No se conservaba el clip <b>antes del voice-change</b> (solo el final).</td>
+        <td>El pipeline solo escribía el mp4 final muxeado.</td>
+        <td><b>Resuelto.</b> Ahora se guarda <code>scene-XX.veo-raw.mp4</code> (voz genérica de Veo)
+          junto al final &rarr; permite re-vocear sin re-render de Veo.</td>
+      </tr>
+      <tr>
+        <td>2026-06-16</td>
+        <td><b>Tropiezo del TTS en escenas talking-head</b> (HeyGen) &rarr; un tramo del diálogo no se
+          entiende. Visto en #3 ("Aprendes <b>a a</b>utomatizar") y #7 ("vas <b>a a</b>prenderlo").</td>
+        <td><b>Choque de vocales idénticas entre palabras</b> (hiato/sinalefa). Ver explicación abajo.</td>
+        <td><b>Resuelto.</b> Reescritos los diálogos ("a lanzar campañas automatizadas", "lo aprenderás")
+          y re-render de #3/#7. Añadida <b>regla en el planner</b> para evitar estas colisiones, anglicismos
+          y siglas sueltas de origen.</td>
+      </tr>
+      <tr>
+        <td>2026-06-16</td>
+        <td><b>La generación de imagen se colgaba indefinidamente</b> &rarr; el run se quedaba parada sin
+          avanzar ni dar error (visto al regenerar una imagen con <code>revise --zone</code>).</td>
+        <td>El SDK de <code>@google/genai</code> no aplica timeout; si el modelo está lento/saturado, la
+          petición no devuelve ni falla, así que <code>withRetry</code> ni se dispara. Detrás había además un
+          <code>503</code> sostenido del modelo Pro de imagen (demanda alta, lado de Google).</td>
+        <td><b>Resuelto.</b> Nuevo util <code>withTimeout</code> (90s por intento) en la generación de imagen
+          &rarr; vence y reintenta; reintentos subidos a 6 para aguantar picos de <code>503</code>. Como el
+          Pro seguía caído, se completó con <b>fallback manual a Flash</b> (<code>gemini-2.5-flash-image</code>);
+          el fallback automático queda en el backlog. Añadida también <b>validación de zona</b> en <code>revise</code>.</td>
+      </tr>
+      <tr>
+        <td>2026-06-16</td>
+        <td><b>Glitch de colisión en escenas dinámicas con locomoción</b> &rarr; el avatar atraviesa muebles
+          al desplazarse (ej.: Elena caminó a través de una mesa en la apertura, ZONE_6).</td>
+        <td>Veo es generativo y no respeta siempre la física/colisiones cuando el avatar camina por un
+          espacio con mobiliario. Más probable con <code>motion</code> de desplazamiento (steps/walk) en
+          zonas con muebles delante.</td>
+        <td>Dos salidas: <b>(A)</b> cambiar el <code>motion</code> a "en el sitio" (push-in de cámara + gesto,
+          sin desplazar el cuerpo) — fix de raíz; <b>(B)</b> re-tirar el clip (Veo no es determinista, otra
+          toma suele salir limpia) — rápido pero lotería. En este caso bastó la B. Para reproducibilidad
+          exacta se podría fijar <code>seed</code> (soportado por fal).</td>
+      </tr>
+      <tr>
+        <td>2026-06-16</td>
+        <td>Editar <code>spec.json</code> no cambiaba el render.</td>
+        <td>El pipeline lee el diálogo de <code>manifest.spec</code> (copia embebida), no de
+          <code>spec.json</code>; ambos pueden desincronizarse.</td>
+        <td>Mitigado: para re-render hay que parchear <code>manifest.spec</code>. Pendiente como mejora:
+          que el stage <code>videos</code> recargue desde <code>spec.json</code>.</td>
+      </tr>
+      <tr>
+        <td>2026-06-15</td>
+        <td>Texto de marca ("CIBERAULA") en paredes salía deformado.</td>
+        <td>La IA no rotula texto exacto de forma fiable.</td>
+        <td><b>Resuelto.</b> Zonas limpiadas; el logo va como overlay en post (Etapa 2).</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Por qué tropieza el TTS con las vocales pegadas</h3>
+  <p>El audio de las escenas talking-head lo sintetiza un <b>TTS</b> (texto &rarr; voz). El fallo no es de
+  HeyGen: es un caso difícil para cualquier motor de síntesis.</p>
+  <ul>
+    <li><b>Sinalefa / hiato de vocales iguales.</b> Cuando una palabra acaba en vocal y la siguiente
+      empieza por la <b>misma</b> vocal, al hablar se funden en un solo sonido alargado: "aprendes
+      <b>a a</b>utomatizar" &rarr; "aprendes-<b>aa</b>-utomatizar". El motor duda entre fusionarlas,
+      separarlas con una micro-pausa o pronunciar ambas; como sus datos son inconsistentes, sale un
+      <b>borrón</b> a medio camino.</li>
+    <li><b>La preposición "a" es el peor caso.</b> Es monosílaba, átona y sin consonante que la ancle;
+      al chocar con otra "a" inicial se la traga la palabra siguiente y se pierde la frontera entre
+      palabras. Pasa igual con "de <b>e</b>l", "que <b>e</b>ntra", "su <b>ú</b>ltimo", "mi <b>i</b>dea".</li>
+    <li><b>Cómo falla por dentro.</b> El motor hace texto &rarr; fonemas &rarr; alineación de duración &rarr;
+      vocoder. Sin un cambio acústico entre las dos vocales (no hay consonante que marque el límite), el
+      alineador no detecta frontera y el vocoder comprime/emborrona ese tramo, a veces con un artefacto audible.</li>
+  </ul>
+  <p>Por eso <b>no se arregla con ajustes de voz</b>: la defensa es redactar evitando la colisión. La
+  <b>regla del planner</b> ya instruye a Claude para que genere el guion sin vocales idénticas pegadas,
+  sin anglicismos ("copy", "engagement") y sin siglas sueltas de dos letras. Un locutor humano haría la
+  sinalefa natural sin pensar; el modelo aún no lo hace de forma fiable.</p>
+</section>
+
+<section id="shots-eval">
+  <h2>Prueba: HeyGen Shots (Cinematic Avatar / Seedance 2.0) para dinámicas</h2>
+  <p class="muted">Historial de la evaluación (2026-06-17) de generar las escenas dinámicas con HeyGen Avatar Shots.
+  Los clips están en <code>chatgpt-previews/</code> (gitignored); los enlaces funcionan al abrir esta guía en local.</p>
+
+  <div class="ok"><b>Estado: INTEGRADO (2026-06-18).</b> Provider <code>heygen-shot</code> en el seam dinámico.
+  Para usarlo: en <code>config.json</code> &rarr; <code>video.dynamic.provider: "heygen-shot"</code> (+ <code>shotResolution</code>),
+  y cada personaje con <code>heygenLookId</code>. Requisitos de render real: <b>saldo de créditos de API de HeyGen</b>
+  y el <b>look de Sofía</b> registrado (Marcos y Elena ya). Voz = la nativa configurada en cada look.</div>
+
+  <h3>Qué es y conclusiones</h3>
+  <ul>
+    <li><b>HeyGen Cinematic Avatar</b> (API <code>POST /v3/videos</code>, <code>type:"cinematic_avatar"</code>, por debajo <b>Seedance 2.0</b>): el avatar <b>camina/se mueve</b> con cámara cinematográfica y <b>habla</b>. Genera la voz desde el texto del prompt usando la <b>voz por defecto del look</b>. Requiere <b>looks registrados</b> (Marcos/Elena ya; falta Sofía).</li>
+    <li>✅ <b>Voz + imagen + lip-sync</b> muy buenos. <b>Pronunciación</b> correcta al usar una <b>voz nativa ES</b> en el look (con voz inglesa/multilingüe leía mal siglas y deformaba palabras).</li>
+    <li>✅ <b>Capacidad cinematográfica</b> confirmada (locomoción libre + travelling + sentarse) — lo que Veo no podía.</li>
+    <li>⚠️ <b>Coste</b>: ~<b>$4.88/clip 720p</b> (~$12 a 1080p) vía <b>créditos de API</b> (beta / tiempo limitado). Es la opción más cara (fal Veo fast ~$1.20, std ~$3.20).</li>
+    <li>⚠️ <b>Reserva de saldo</b>: la API <b>retiene ~$10+ por adelantado</b> aunque el clip cueste ~$4.88 (con ~$5 de saldo da <code>402</code>; con ~$10 entra). Hay que mantener un colchón de crédito de API para producir.</li>
+    <li>❌ <b>fal Seedance directo</b> (no vía HeyGen) NO sirve para imponer NUESTRA voz: con <code>generate_audio:false</code> sale mudo y sin lip-sync útil; con <code>true</code> genera su propia voz.</li>
+  </ul>
+
+  <h3>Clips de la prueba (HeyGen Shots — Marcos, look + voz)</h3>
+  <table>
+    <tr><th>Clip</th><th>Qué probó</th><th>Resultado</th></tr>
+    <tr><td><a href="../chatgpt-previews/heygenshot-marcos-scene3.mp4">heygenshot-marcos-scene3</a> (1080p)</td><td>Primer test, voz por defecto del look (ElevenLabs Tony), diálogo con siglas.</td><td>Voz/imagen/lip-sync OK; siglas en inglés ("Be Be Vi Ei", "Chat Ge Pe Ti").</td></tr>
+    <tr><td><a href="../chatgpt-previews/heygenshot-marcos-scene3-pron.mp4">…-pron</a> (720p)</td><td>Respelling: BBVA→"Be Be Uve A", GPT→"Ge Pe Te".</td><td>BBVA ok (con pausa); GPT→"Gue Pe Te"; habla algo lenta.</td></tr>
+    <tr><td><a href="../chatgpt-previews/heygenshot-marcos-scene3-pron2.mp4">…-pron2</a> (720p)</td><td>GPT→"Je Pe Te" + señal de ritmo "brisk".</td><td>GPT→"Ye"; "Telefónica"→"Telefonofica" (el ritmo atropelló); más rápido.</td></tr>
+    <tr><td><a href="../chatgpt-previews/heygenshot-marcos-scene3-jc.mp4">…-jc</a> (720p) ⭐</td><td><b>Voz nativa ES "Juan Carlos"</b>, diálogo canónico (sin trucos).</td><td><b>Siglas y palabras OK</b>; único detalle: BBVA dice "Ve" en vez de "Uve". → la voz era el problema.</td></tr>
+    <tr><td><a href="../chatgpt-previews/heygenshot-marcos-walk-sit.mp4">…-walk-sit</a> (720p) 🎬</td><td>Shot cinematográfico: camina → cámara <b>lateral</b> lo sigue → se sienta → sigue hablando.</td><td>Locomoción + cámara OK, PERO mientras camina de perfil <b>no hay lip-sync</b> (se oye la voz, la boca quieta); los labios solo se mueven al sentarse y mirar a cámara. → ver regla abajo.</td></tr>
+    <tr><td><a href="../chatgpt-previews/heygenshot-marcos-walk-sit-v2.mp4">…-walk-sit-v2</a> (720p) ✅🎬</td><td>Igual pero camina <b>HACIA la cámara</b>, mirando a la lente; la cámara retrocede de frente; se sienta sin perder contacto visual.</td><td><b>Perfecto</b>: habla con <b>lip-sync desde el primer momento</b>, camina natural y cierra sentado. Confirma la regla cara-a-cámara.</td></tr>
+  </table>
+
+  <h3>⚠️ Regla de diseño de shots hablados (importante)</h3>
+  <p>Cinematic Avatar <b>solo hace lip-sync cuando la cara mira a la cámara</b>. Si el avatar camina de perfil
+  (cámara lateral), la voz suena pero la boca no se mueve. Para escenas <b>habladas</b>:</p>
+  <ul>
+    <li>El avatar debe <b>mirar a cámara durante el habla</b>.</li>
+    <li>SÍ funcionan: <b>caminar hacia la cámara</b> (de frente); <b>hablar de frente + cámara en movimiento</b> (órbita/dolly/push-in); <b>"entra, se gira a cámara y habla"</b> (locomoción primero, habla de frente después).</li>
+    <li>EVITAR: cámara lateral/de perfil <i>mientras</i> habla; "walk-and-talk" de perfil.</li>
+  </ul>
+
+  <h3>Clips relacionados (fal Seedance directo — Sofía, descartado)</h3>
+  <ul>
+    <li><a href="../chatgpt-previews/seedance-sofia-scene1.mp4">seedance-sofia-scene1</a> — <code>generate_audio:false</code> → mudo.</li>
+    <li><a href="../chatgpt-previews/seedance-sofia-scene1-voiced.mp4">…-voiced</a> — el mudo + voz TTS muxeada → lip-sync no cuadra.</li>
+    <li><a href="../chatgpt-previews/seedance-sofia-scene1-genaudio.mp4">…-genaudio</a> — <code>generate_audio:true</code> → voz propia de Seedance (no la nuestra).</li>
+  </ul>
+</section>
+
+<section id="costes">
+  <h2>Costes / pricing por vídeo</h2>
+  <p class="muted">Estimación (2026-06-17) para definir el precio al cliente. Valores ✅ medidos en pruebas reales;
+  ≈ estimados (verificar). Vídeo de referencia: ~9 escenas / ~60-70s.</p>
+
+  <h3>1. Coste unitario por componente</h3>
+  <table>
+    <tr><th>Componente</th><th>Coste</th><th>Fuente</th></tr>
+    <tr><td>Spec (Claude opus)</td><td>≈ $0.30–0.50 / vídeo</td><td>estimado (tokens)</td></tr>
+    <tr><td>Imagen base (Nano Banana Pro)</td><td>≈ $0.10–0.15 / imagen</td><td>estimado · verificar</td></tr>
+    <tr><td>Talking-head (HeyGen Avatar IV)</td><td>20 créditos/min ≈ $0.10 / escena</td><td>✅ oficial</td></tr>
+    <tr><td><b>Dinámica — HeyGen Shots 720p</b></td><td><b>~$4.88 / clip</b></td><td>✅ medido</td></tr>
+    <tr><td>Dinámica — HeyGen Shots 1080p</td><td>~$12 / clip</td><td>✅ medido</td></tr>
+    <tr><td><b>Dinámica — Veo fast (fal)</b></td><td><b>~$1.20 / clip</b></td><td>✅</td></tr>
+    <tr><td>Dinámica — Veo std (fal)</td><td>~$3.20 / clip</td><td>✅ medido</td></tr>
+    <tr><td>Voz ElevenLabs (TTS/STS)</td><td>≈ $0.05–0.10 / escena</td><td>estimado</td></tr>
+    <tr><td>Montaje (ffmpeg)</td><td>$0 (local)</td><td>—</td></tr>
+  </table>
+  <p class="muted">Las <b>dinámicas dominan el coste</b>; el resto de componentes son pequeños.</p>
+
+  <h3>2. Coste de generación por vídeo según estrategia (9 escenas)</h3>
+  <table>
+    <tr><th>Escenario</th><th>Dinámicas</th><th>Coste API/gen</th></tr>
+    <tr><td>A — Todo HeyGen Shots 720p (5 din + 4 TH)</td><td>5 × $4.88</td><td><b>~$25–26</b></td></tr>
+    <tr><td>B — Mixto recomendado (3 Shots hero + 6 TH)</td><td>3 × $4.88</td><td><b>~$16–17</b></td></tr>
+    <tr><td>C — Veo fast (5 din + 4 TH)</td><td>5 × $1.20</td><td><b>~$8</b></td></tr>
+    <tr><td>D — Mínimo (2 din Veo fast + 7 TH)</td><td>2 × $1.20</td><td><b>~$4–5</b></td></tr>
+  </table>
+  <p>Coste variable de generación: <b>~$5 a ~$26</b> según motor, nº de dinámicas y resolución.</p>
+
+  <h3>3. Para fijar el precio al cliente, suma además</h3>
+  <ul>
+    <li><b>Suscripciones fijas a amortizar</b> (no por vídeo): HeyGen Pro <b>$99/mes</b>, ElevenLabs (~$22–99/mes),
+      API Claude/Google (pago por uso). Divídelo entre los vídeos/mes (ej. 20 vídeos/mes ≈ <b>~$6/vídeo</b>).</li>
+    <li><b>Colchón de iteraciones</b> (re-render de escenas por QA/pronunciación/glitches): <b>+20–40%</b>.</li>
+    <li><b>Tu tiempo/operación</b> (revisar, elegir shots, ajustar): el mayor coste oculto — ponle tarifa/hora.</li>
+    <li><b>Margen</b> comercial.</li>
+  </ul>
+
+  <h3>Ejemplo de coste TOTAL (escenario B, mixto)</h3>
+  <pre><code>Generación API        ~$16
++ subs amortizadas    ~$6   (a 20 vídeos/mes)
++ buffer iteración    ~$5   (+30%)
+─────────────────────────
+Coste real            ~$27 / vídeo   (+ margen = precio al cliente)</code></pre>
+
+  <div class="note"><b>Ojo:</b> HeyGen Shots por API es <b>beta / tiempo limitado</b> (riesgo de precio/disponibilidad);
+  además su API <b>reserva ~$10+</b> por adelantado. Los costes de Claude/Nano Banana/ElevenLabs son estimados.</div>
+
+  <div class="ok"><b>Automatizado:</b> cada <code>assemble</code> calcula el coste de generación desde el manifest y
+  escribe <code>costs.md</code> en el run (y lo cachea en <code>manifest.costEstimate</code>). Recalcular a mano:
+  <code>costs -r &lt;run&gt;</code>. El <b>catálogo</b> muestra el coste estimado por curso (💰 ~$). Precios unitarios en
+  <code>src/core/costs.ts</code> (<code>UNIT_COSTS</code>). Mide el coste de los <b>clips finales</b>: no incluye
+  re-tiradas/iteraciones, suscripciones, tiempo ni margen.</div>
+</section>
+
+<section id="duracion">
+  <h2>Duración de producción (tiempo de máquina)</h2>
+  <p class="muted">Tiempos reales medidos (2026-06-18) para un vídeo de <b>9 escenas: 8 dinámicas single-avatar +
+  1 dúo</b>, perfecto a la primera. El pipeline corre <b>en serie</b> (<code>for … await</code>), así que los
+  tiempos se <b>suman</b>.</p>
+  <table>
+    <tr><th>Etapa</th><th>Cálculo (medido)</th><th>Tiempo</th></tr>
+    <tr><td>Spec (Claude: fetch ficha + guion)</td><td>1 pasada</td><td>~45 s</td></tr>
+    <tr><td>Imágenes base (Nano Banana)</td><td>8 × ~25 s</td><td>~3,4 min</td></tr>
+    <tr><td>Voz (ElevenLabs TTS, 8 esc.)</td><td>8 × ~3 s</td><td>~25 s</td></tr>
+    <tr><td><b>Dinámicas</b> (Veo/fal i2v + STS + mux)</td><td>8 × ~108 s (media real)</td><td><b>~14,4 min</b></td></tr>
+    <tr><td><b>Dúo</b> (HeyGen Cinematic)</td><td>1 × ~5,3 min</td><td><b>~5,3 min</b></td></tr>
+    <tr><td>Montaje (ffmpeg, local)</td><td>9 clips</td><td>~30 s</td></tr>
+    <tr><td><b>TOTAL (serial)</b></td><td></td><td><b>≈ 24–26 min</b></td></tr>
+  </table>
+  <div class="note">Es <b>tiempo de máquina</b>, no tu tiempo de revisar/aprobar. "Perfecto a la primera" asume
+  cero re-tiradas. Rango por escena dinámica: 69–142 s (la cola de fal varía), así que el total oscila
+  <b>~21–28 min</b>. El dúo es hoy un <b>paso aparte</b> (script + swap + remontaje).</div>
+
+  <h3>Paralelización (la palanca de velocidad)</h3>
+  <p>El 80% del tiempo son las <b>8 dinámicas (~14 min) + el dúo (~5 min)</b>, y hoy se generan
+  <b>una tras otra</b>. Cada escena es independiente (escribe su propio <code>scene-NN.mp4</code>, sin estado
+  compartido), así que se pueden lanzar <b>a la vez</b>.</p>
+  <div class="flow">
+    <div class="step"><b>1 · Concurrencia por etapa</b><small>Sustituir el bucle <code>for…await</code> por un pool: lanzar N escenas a la vez en images/voice/videos en vez de en serie.</small></div>
+    <div class="step"><b>2 · Tope de concurrencia</b><small>Un semáforo (p. ej. 4-5 simultáneas) para respetar los límites de los proveedores (fal/HeyGen) y la reserva de crédito.</small></div>
+    <div class="step"><b>3 · Tolerancia a fallos</b><small><code>allSettled</code>: si una escena falla, las demás siguen; se re-tira solo la que falló.</small></div>
+  </div>
+  <p>Con un tope de ~4-5 simultáneas, las 8 dinámicas pasan de <b>sumarse</b> (~14 min) a <b>2 tandas</b>
+  (~3,5 min), y el <b>dúo corre en paralelo</b> con ellas (~5 min). Las imágenes también se paralelizan
+  (~3,4 min &rarr; ~1 min). El total bajaría de <b>~25 min a ≈ 6-7 min</b> (≈ la cadena más lenta), sin perder
+  calidad — la latencia individual la pone el servidor (HeyGen/Veo), pero se <b>solapa</b>.</p>
+  <div class="warn"><b>A vigilar al paralelizar:</b> límites de jobs simultáneos y rate-limits de cada API;
+  la reserva de crédito de HeyGen (~$10+/job) exige <b>más colchón de saldo</b> si lanzas varios; logs que se
+  entremezclan (prefijar por escena); y manejar el fallo de una escena sin tumbar el lote.</div>
+  <div class="ok"><b>Cómo se implementaría:</b> un helper de concurrencia (<code>pMap</code> con límite, sin
+  dependencias) que envuelva los bucles de <code>images()</code>/<code>voice()</code>/<code>videos()</code> en
+  <code>src/core/pipeline.ts</code>, con un parámetro <code>concurrency</code> en <code>config.json</code>
+  (default 1 = comportamiento actual). Avanzado: <b>pipelinear etapas</b> (empezar el vídeo de una escena en cuanto
+  su imagen base está lista, sin esperar a que terminen todas las imágenes).</div>
+</section>
+
+<section id="mejoras">
+  <h2>Mejoras futuras (backlog)</h2>
+  <table>
+    <thead><tr><th>Mejora</th><th>Por qué</th><th>Impacto</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><b>Velocidad de reproducción configurable</b> (<code>video.speed</code> en config.json; el <code>assemble</code> aplica <code>setpts</code> + <code>atempo</code> al final). <b>BLOQUEADO: pendiente de validación de la clienta</b> — no implementar hasta su visto bueno (no se cierra contrato sin aprobación).</td>
+        <td>La clienta pidió ritmo más rápido. Tras A/B, la opción validada provisionalmente es <b>1.5× con <code>atempo</code></b> (tono preservado; <code>rubberband</code> sonó metálico y el resampleo subía el tono "a lo helio"). Hoy se aplica a mano por vídeo; hornearlo evitaría el paso manual y dejaría todos los vídeos a ese ritmo por defecto. Tarea relacionada: marcar el entregable oficial y, para talking-head/dúo futuros, subir el <code>speed</code> en la fuente de voz (ElevenLabs/HeyGen) para acelerar sin tocar el movimiento.</td>
+        <td>Medio. Trivial de implementar; el bloqueo es comercial (aprobación de la clienta), no técnico.</td>
+      </tr>
+      <tr>
+        <td><b>Paralelizar el render</b> (imágenes, HeyGen y Veo concurrentes, con tope de concurrencia para respetar los RPM)</td>
+        <td>Hoy el pipeline procesa escena por escena en serie (<code>for … await</code>), así que las latencias de cada proveedor se SUMAN. La latencia individual es del servidor (HeyGen anima el avatar, Veo renderiza el clip) y no se puede bajar, pero sí solapar.</td>
+        <td><b>Alto.</b> Un run de ~6 escenas pasaría de ~9 min a ~2-3 min sin perder calidad. Es el cambio de mayor impacto en velocidad.</td>
+      </tr>
+      <tr>
+        <td><b>✅ Reporte de coste por video</b> (costs.md + coste en el catálogo) — <i>hecho</i></td>
+        <td>Implementado en <code>src/core/costs.ts</code>: <code>assemble</code> escribe <code>costs.md</code> y el catálogo muestra 💰 ~$. Pendiente menor: mover <code>UNIT_COSTS</code> a <code>config.json</code> y contar iteraciones reales.</td>
+        <td>Medio. Útil para fijar precio del producto.</td>
+      </tr>
+      <tr>
+        <td><b>Ruta Vertex AI para Veo</b> (en vez de AI Studio)</td>
+        <td>Cuotas más altas y aumento formal por proyecto; evita el <code>429</code> diario al producir en volumen.</td>
+        <td>Medio. Necesario si Ciberaula genera muchos cursos/día.</td>
+      </tr>
+      <tr>
+        <td><b>Fallback automático de imagen Pro&rarr;Flash</b></td>
+        <td>Cuando <code>gemini-3-pro-image-preview</code> da <code>503</code> por demanda alta sostenida, continuar
+          con <code>gemini-2.5-flash-image</code> en vez de abortar el run (hoy el cambio es manual en config).</td>
+        <td>Medio. Evita bloquear un run por una saturación temporal del modelo Pro.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="etapa2">
+  <h2>Etapa 2 — composición (pendiente)</h2>
+  <p>El render produce los clips del avatar (con voz y movimiento). La capa de <b>post</b> queda pendiente y
+  el spec ya la lleva descrita por escena:</p>
+  <ul>
+    <li><b>Overlays / branding:</b> logo Ciberaula, números, chips de beneficios, lower-thirds, banner del CTA.</li>
+    <li><b>Transiciones</b> entre escenas (cortes, whip-cuts, fades) en vez de cortes secos.</li>
+    <li><b>Música</b> y subtítulos.</li>
+  </ul>
+  <p class="muted">Se haría con un motor de composición (Remotion / ffmpeg / edición), consumiendo los
+  <code>overlays</code>/<code>transition_*</code> del spec.</p>
+</section>
+
+<p class="muted" style="text-align:center;margin:40px 0 10px">video-mkt-gen · pipeline Node/TypeScript · Claude · Nano Banana 2 · HeyGen Avatar IV · Veo 3.1 · ElevenLabs</p>
+
+</main>
+</div>
+</body>
+</html>

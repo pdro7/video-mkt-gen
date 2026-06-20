@@ -8,6 +8,8 @@ import type { CharacterConfig } from "../../config/schema.js";
  */
 export interface SpecGenerationContext {
   brief: CourseBrief;
+  /** Texto extraído de la ficha del curso (brief.source_url): fuente principal del guion. */
+  sourceText?: string;
   characters: CharacterConfig[];
   /** Librería de zonas disponibles (id -> descripción); Claude referencia por id, no inventa. */
   zones: Record<string, string>;

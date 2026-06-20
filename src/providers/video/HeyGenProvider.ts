@@ -1,4 +1,5 @@
 import { createLogger } from "../../util/logger.js";
+import { withRetry } from "../../util/retry.js";
 import type {
   CreateSceneVideoInput,
   SceneVideoResult,
@@ -88,13 +89,16 @@ export class HeyGenProvider implements VideoProvider {
   /** Sube bytes como asset (imagen o audio) y devuelve su id, url e image_key. */
   private async uploadAsset(data: Buffer, contentType: string, what: string): Promise<UploadedAsset> {
     log.info(`Subiendo ${what} como asset...`);
-    const res = await fetch(`${UPLOAD_BASE}/v1/asset`, {
-      method: "POST",
-      headers: { "X-Api-Key": this.apiKey, "Content-Type": contentType },
-      body: new Uint8Array(data),
-    });
-    const text = await res.text();
-    if (!res.ok) throw new Error(`HeyGen upload (${what}) -> ${res.status}: ${text}`);
+    const text = await withRetry(async () => {
+      const res = await fetch(`${UPLOAD_BASE}/v1/asset`, {
+        method: "POST",
+        headers: { "X-Api-Key": this.apiKey, "Content-Type": contentType },
+        body: new Uint8Array(data),
+      });
+      const t = await res.text();
+      if (!res.ok) throw new Error(`HeyGen upload (${what}) -> ${res.status}: ${t}`);
+      return t;
+    }, `heygen upload ${what}`);
     let json: any;
     try {
       json = JSON.parse(text);
@@ -108,12 +112,12 @@ export class HeyGenProvider implements VideoProvider {
   }
 
   private async fetchJson(url: string, init: RequestInit): Promise<any> {
-    const res = await fetch(url, {
-      ...init,
-      headers: { "X-Api-Key": this.apiKey, ...(init.headers ?? {}) },
-    });
-    const text = await res.text();
-    if (!res.ok) throw new Error(`HeyGen ${init.method} ${url} -> ${res.status}: ${text}`);
+    const text = await withRetry(async () => {
+      const res = await fetch(url, { ...init, headers: { "X-Api-Key": this.apiKey, ...(init.headers ?? {}) } });
+      const t = await res.text();
+      if (!res.ok) throw new Error(`HeyGen ${init.method} ${url} -> ${res.status}: ${t}`);
+      return t;
+    }, `heygen ${init.method}`);
     try {
       return JSON.parse(text);
     } catch {

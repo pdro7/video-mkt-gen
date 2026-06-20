@@ -9,6 +9,9 @@ import { ElevenLabsProvider } from "./voice/ElevenLabsProvider.js";
 import { HeyGenProvider } from "./video/HeyGenProvider.js";
 import { NanoBananaProvider } from "./image/NanoBananaProvider.js";
 import { DynamicVideoProvider } from "./dynamic/DynamicVideoProvider.js";
+import { FalDynamicVideoProvider } from "./dynamic/FalDynamicVideoProvider.js";
+import { HeyGenShotProvider } from "./dynamic/HeyGenShotProvider.js";
+import type { DynamicProvider } from "./dynamic/BaseDynamicVideoProvider.js";
 
 /**
  * Punto único de instanciación de proveedores concretos a partir de config + credenciales.
@@ -21,8 +24,8 @@ export interface Providers {
   video: VideoProvider;
   /** null cuando providers.image === "none" (se usa la imagen del personaje tal cual). */
   image: ImageProvider | null;
-  /** Motor de escenas dinámicas (Veo + voice changer); null si faltan GOOGLE/ELEVENLABS keys. */
-  dynamic: DynamicVideoProvider | null;
+  /** Motor de escenas dinámicas (Veo + voice changer); null si faltan las keys necesarias. */
+  dynamic: DynamicProvider | null;
 }
 
 export function createProviders(config: AppConfig, creds: Credentials): Providers {
@@ -35,14 +38,34 @@ export function createProviders(config: AppConfig, creds: Credentials): Provider
   };
 }
 
-function createDynamic(config: AppConfig, creds: Credentials): DynamicVideoProvider | null {
-  if (!creds.googleApiKey || !creds.elevenLabsApiKey) return null;
-  return new DynamicVideoProvider({
-    googleApiKey: creds.googleApiKey,
-    elevenLabsApiKey: creds.elevenLabsApiKey,
-    veoModel: config.video.dynamic.veoModel,
-    stsModel: config.video.dynamic.stsModel,
-  });
+function createDynamic(config: AppConfig, creds: Credentials): DynamicProvider | null {
+  const dyn = config.video.dynamic;
+  // HeyGen Shots: voz NATIVA del look (NO usa ElevenLabs STS); solo necesita la key de HeyGen.
+  if (dyn.provider === "heygen-shot") {
+    if (!creds.heygenApiKey) return null;
+    return new HeyGenShotProvider({ apiKey: creds.heygenApiKey, resolution: dyn.shotResolution });
+  }
+  // Veo (gemini/fal): el voice changer (ElevenLabs) es común.
+  if (!creds.elevenLabsApiKey) return null;
+  switch (dyn.provider) {
+    case "fal":
+      if (!creds.falKey) return null;
+      return new FalDynamicVideoProvider({
+        falKey: creds.falKey,
+        elevenLabsApiKey: creds.elevenLabsApiKey,
+        falModel: dyn.falModel,
+        stsModel: dyn.stsModel,
+      });
+    case "gemini":
+    default:
+      if (!creds.googleApiKey) return null;
+      return new DynamicVideoProvider({
+        googleApiKey: creds.googleApiKey,
+        elevenLabsApiKey: creds.elevenLabsApiKey,
+        veoModel: dyn.veoModel,
+        stsModel: dyn.stsModel,
+      });
+  }
 }
 
 function createLLM(config: AppConfig, creds: Credentials): LLMProvider {

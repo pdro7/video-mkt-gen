@@ -1,5 +1,10 @@
 import { GoogleGenAI } from "@google/genai";
 import { createLogger } from "../../util/logger.js";
+import { withRetry } from "../../util/retry.js";
+import { withTimeout } from "../../util/timeout.js";
+
+/** Tope por intento de generación de imagen; si el modelo se cuelga, vence y se reintenta. */
+const IMAGE_TIMEOUT_MS = 90_000;
 import type {
   GenerateSceneInput,
   GeneratedImage,
@@ -42,11 +47,20 @@ export class NanoBananaProvider implements ImageProvider {
     if (this.resolution) imageConfig.imageSize = this.resolution;
 
     log.info(`Generando imagen (${input.referenceImages.length} ref) con ${this.model}...`);
-    const response = await this.client.models.generateContent({
-      model: this.model,
-      contents: [{ role: "user", parts }],
-      ...(Object.keys(imageConfig).length ? { config: { imageConfig } as Record<string, unknown> } : {}),
-    });
+    const response = await withRetry(
+      () =>
+        withTimeout(
+          this.client.models.generateContent({
+            model: this.model,
+            contents: [{ role: "user", parts }],
+            ...(Object.keys(imageConfig).length ? { config: { imageConfig } as Record<string, unknown> } : {}),
+          }),
+          IMAGE_TIMEOUT_MS,
+          `nano-banana ${this.model}`,
+        ),
+      `nano-banana ${this.model}`,
+      6, // el modelo de imagen sufre picos de 503; más reintentos para aguantarlos
+    );
 
     const candidate = response.candidates?.[0];
     const outParts = candidate?.content?.parts ?? [];

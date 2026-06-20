@@ -60,6 +60,12 @@ export const sceneSpecSchema = z.object({
    * describe el movimiento para Veo (p. ej. "plano medio, movimiento natural y gestos").
    */
   motion: z.string().optional(),
+  /**
+   * Escena con MÚLTIPLES avatares en una sola toma (p. ej. HeyGen Cinematic Avatar a dúo):
+   * la línea que dice cada personaje, en orden. Si está presente, el guion del catálogo la
+   * muestra como escena de varios hablantes en vez de un único `dialogue`.
+   */
+  cast: z.array(z.object({ character: z.string(), dialogue: z.string() })).optional(),
   estimated_seconds: z.number().optional(),
   transition_in: z.string().optional(),
   transition_out: z.string().optional(),
@@ -116,21 +122,31 @@ const DEFAULT_DYNAMIC_MOTIONS = [
 ];
 
 /**
- * Garantiza un número determinista de escenas dinámicas (con `motion`): incluye SIEMPRE la
- * primera y la última, y reparte el resto de forma equiespaciada. A las seleccionadas que no
- * traen `motion` les pone uno por defecto (estilo A); a las no seleccionadas les quita `motion`.
+ * Fija el número de escenas dinámicas (con `motion`) a `target`, priorizando el criterio de Claude:
+ *   - Apertura y cierre SIEMPRE dinámicas (gancho y CTA con movimiento).
+ *   - Luego RESPETA las que Claude marcó con movimiento real (sabe dónde encaja).
+ *   - Si aún faltan para llegar a `target`, rellena con escenas repartidas (equiespaciadas).
+ *   - Al resto le QUITA `motion`.
+ * A las seleccionadas sin `motion` escrito les pone uno por defecto (pool variado, movimiento suave).
  */
 export function enforceDynamicSceneCount(spec: ProductionSpec, target: number): void {
   const n = spec.scenes.length;
-  const k = Math.max(0, Math.min(Math.floor(target), n));
+  if (n === 0) return;
+  const k = Math.max(0, Math.min(Math.round(target), n));
   const selected = new Set<number>();
-  if (k >= n) {
-    for (let i = 0; i < n; i++) selected.add(i);
-  } else if (k === 1) {
-    selected.add(0);
-  } else if (k > 1) {
-    for (let i = 0; i < k; i++) selected.add(Math.round((i * (n - 1)) / (k - 1)));
+  // 1) Apertura + cierre.
+  if (k >= 1) selected.add(0);
+  if (k >= 2 && n > 1) selected.add(n - 1);
+  // 2) Intermedias marcadas por Claude (movimiento real), hasta llenar k.
+  for (let i = 1; i < n - 1 && selected.size < k; i++) {
+    if (spec.scenes[i]!.motion) selected.add(i);
   }
+  // 3) Si faltan, rellenar repartido (equiespaciado) y, por si quedan huecos, lineal.
+  for (let step = 0; step < n && selected.size < k; step++) {
+    selected.add(Math.round((step * (n - 1)) / Math.max(1, k - 1)));
+  }
+  for (let i = 0; i < n && selected.size < k; i++) selected.add(i);
+
   let fallbackIdx = 0;
   spec.scenes.forEach((s, i) => {
     if (selected.has(i)) {

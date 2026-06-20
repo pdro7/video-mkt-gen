@@ -1,5 +1,6 @@
 import type { CourseBrief } from "./brief.js";
 import type { ProductionSpec } from "./spec.js";
+import type { CostEstimate } from "./costs.js";
 
 /**
  * Tipos de artefactos producidos por el pipeline. El spec creativo vive en spec.ts;
@@ -46,7 +47,7 @@ export interface SceneVideo {
   genSeconds?: number;
 }
 
-/** Manifiesto persistido por corrida: permite reanudar (spec -> images -> voice -> video). */
+/** Manifiesto persistido por run: permite reanudar (spec -> images -> voice -> video). */
 export interface RunManifest {
   runId: string;
   createdAt: string;
@@ -57,4 +58,8 @@ export interface RunManifest {
   images?: BaseImage[];
   audio?: SceneAudio[];
   videos?: SceneVideo[];
+  /** Ruta del mp4 final montado (etapa assemble). */
+  finalVideo?: string;
+  /** Estimación de coste de generación (API), calculada en assemble. Ver core/costs.ts. */
+  costEstimate?: CostEstimate;
 }
