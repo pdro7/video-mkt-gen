@@ -1035,14 +1035,21 @@ ffmpeg -i final.mp4 -i fast.wav -filter:v "setpts=PTS/1.5" \
 
   <div class="ok"><b>✅ Integrado y por defecto.</b> Hay un <code>SyncDynamicProvider</code> y
   <code>video.dynamic.provider = "sync"</code> es el motor dinámico por defecto. Flujo:
-  <b>Veo i2v (visual, cara hablando) → Sync: TTS ElevenLabs (desde el diálogo) + lip-sync → <code>scene-NN.mp4</code></b>.
-  <b>No usa el voice-changer (STS).</b> Config: <code>syncModel</code> (default <code>lipsync-2</code>); credenciales
-  <code>FAL_KEY</code> (visual Veo) + <code>SYNC_API_KEY</code> (lip-sync). El STS sigue disponible cambiando
-  <code>provider</code> a <code>fal</code>/<code>gemini</code>.</div>
+  <b>Veo i2v (visual, cara hablando) → Sync: TTS ElevenLabs + lip-sync → <code>scene-NN.mp4</code></b>.
+  <b>No usa el voice-changer (STS).</b> Defaults: <code>syncModel = "sync-3"</code> (máxima naturalidad de boca) y
+  <code>ttsSpeed = 1.1</code>. Credenciales: <code>FAL_KEY</code> (visual Veo) + <code>SYNC_API_KEY</code> (lip-sync) +
+  <code>ELEVENLABS_API_KEY</code> (TTS con speed). El STS sigue disponible cambiando <code>provider</code> a
+  <code>fal</code>/<code>gemini</code>.</div>
+  <div class="ok"><b>Control de velocidad de la voz (<code>ttsSpeed</code>):</b> el TTS integrado de Sync NO expone
+  <code>speed</code>. Por eso, si <code>ttsSpeed ≠ 1</code>, generamos el TTS con la API de <b>ElevenLabs</b> (que sí
+  tiene <code>speed</code>, rango <b>0,7–1,2</b>) y se lo pasamos a Sync como <b>audio</b>. Así se acelera la voz
+  <b>de forma nativa, sin <code>atempo</code></b>. Por encima de 1,2 ElevenLabs no sube más. Default <b>1.1</b>
+  (ágil sin que se note acelerado); el TTS además ya sale más denso que el STS (~6s vs ~8s por frase).</div>
   <div class="note"><b>Cómo cambia el pipeline:</b> en el flujo <code>sync</code> desaparecen el <b>STS</b> y el mux de
   audio propio; Veo solo aporta el <b>visual</b> (su audio/voz/música se descartan, así que su mala pronunciación de
-  siglas deja de importar — la voz la pone el TTS de Sync). <b>Coste:</b> sube (Veo ~$1.20 + Sync ~$0.48 con lipsync-2
-  ≈ <b>~$1.70/escena</b>), porque Sync se añade a Veo, no lo reemplaza. Aún no contemplado en <code>costs.md</code> (backlog).</div>
+  siglas deja de importar — la voz la pone el TTS). <b>Coste:</b> sube (Veo ~$1.20 + Sync ~$0.97 con <code>sync-3</code>
+  ≈ <b>~$2.2/escena</b>; con <code>lipsync-2</code> ~$1.70), porque Sync se añade a Veo, no lo reemplaza. Aún no
+  contemplado en <code>costs.md</code> (backlog).</div>
 </section>
 
 <section id="mejoras">

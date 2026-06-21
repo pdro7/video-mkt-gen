@@ -87,6 +87,10 @@ export function assertCredentialsForConfig(config: AppConfig, creds: Credentials
   if (config.video.dynamic.provider === "sync") {
     if (!creds.falKey) missing.push("FAL_KEY (video dinámico sync: visual con Veo)");
     if (!creds.syncApiKey) missing.push("SYNC_API_KEY (video dinámico sync: lip-sync)");
+    // Con ttsSpeed != 1 generamos el TTS con ElevenLabs (necesita su clave).
+    if (config.video.dynamic.ttsSpeed !== 1 && !creds.elevenLabsApiKey) {
+      missing.push("ELEVENLABS_API_KEY (video dinámico sync: TTS con speed)");
+    }
   }
 
   if (missing.length > 0) {

@@ -18,7 +18,9 @@ const log = createLogger("dynamic-sync");
 export class SyncDynamicProvider extends FalDynamicVideoProvider {
   private syncApiKey: string;
   private syncModel: string;
+  private ttsSpeed: number;
   private readonly api = "https://api.sync.so";
+  private readonly ttsModel = "eleven_multilingual_v2";
 
   constructor(opts: {
     falKey: string;
@@ -27,10 +29,42 @@ export class SyncDynamicProvider extends FalDynamicVideoProvider {
     stsModel: string;
     syncApiKey: string;
     syncModel: string;
+    ttsSpeed?: number;
   }) {
     super(opts);
     this.syncApiKey = opts.syncApiKey;
     this.syncModel = opts.syncModel;
+    this.ttsSpeed = opts.ttsSpeed ?? 1;
+  }
+
+  /**
+   * TTS propio con ElevenLabs (cuando ttsSpeed != 1, ya que el TTS integrado de Sync no expone speed).
+   * Devuelve el audio mp3 para subirlo a Sync como input de tipo "audio".
+   */
+  private async elevenTts(text: string, voiceId: string, vs: DynamicSceneInput["voiceSettings"]): Promise<Buffer> {
+    if (!this.elevenLabsApiKey) throw new Error("Sync ttsSpeed: falta ELEVENLABS_API_KEY para el TTS con speed.");
+    return withRetry(async () => {
+      const res = await fetch(
+        `https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(voiceId)}?output_format=mp3_44100_128`,
+        {
+          method: "POST",
+          headers: { "xi-api-key": this.elevenLabsApiKey, "Content-Type": "application/json" },
+          body: JSON.stringify({
+            text,
+            model_id: this.ttsModel,
+            voice_settings: {
+              stability: vs?.stability ?? 0.5,
+              similarity_boost: vs?.similarity_boost ?? 0.75,
+              style: vs?.style ?? 0,
+              use_speaker_boost: vs?.speaker_boost ?? true,
+              speed: this.ttsSpeed,
+            },
+          }),
+        },
+      );
+      if (!res.ok) throw new Error(`ElevenLabs TTS ${res.status}: ${await res.text()}`);
+      return Buffer.from(await res.arrayBuffer());
+    }, "elevenlabs tts (speed)");
   }
 
   /** Sube un archivo local a Sync (presigned URL) y devuelve la URL pública usable en el input. */
@@ -71,29 +105,36 @@ export class SyncDynamicProvider extends FalDynamicVideoProvider {
     log.info("Subiendo visual a Sync...");
     const videoUrl = await this.upload(veoMp4, "video/mp4");
 
-    // 3) Crear la generación: TTS ElevenLabs (desde el diálogo) + lip-sync.
+    // 3) Audio: si ttsSpeed != 1, generamos el TTS con ElevenLabs (con speed) y lo pasamos como audio;
+    //    si no, dejamos que Sync haga el TTS integrado (type "text").
     const vs = input.voiceSettings;
-    log.info(`Sync lip-sync (${this.syncModel}, TTS ElevenLabs)...`);
+    let audioInput: Record<string, unknown>;
+    if (this.ttsSpeed !== 1) {
+      log.info(`TTS propio (ElevenLabs, speed=${this.ttsSpeed})...`);
+      const audioBuf = await this.elevenTts(input.script, input.voiceId, vs);
+      const audioPath = join(tmp, "voice.mp3");
+      writeFileSync(audioPath, audioBuf);
+      const audioUrl = await this.upload(audioPath, "audio/mpeg");
+      audioInput = { type: "audio", url: audioUrl };
+    } else {
+      audioInput = {
+        type: "text",
+        provider: {
+          name: "elevenlabs",
+          voiceId: input.voiceId,
+          script: input.script,
+          stability: vs?.stability ?? 0.5,
+          similarityBoost: vs?.similarity_boost ?? 0.75,
+        },
+      };
+    }
+
+    log.info(`Sync lip-sync (${this.syncModel})...`);
     const job = await withRetry(async () => {
       const res = await fetch(`${this.api}/v2/generate`, {
         method: "POST",
         headers: { "x-api-key": this.syncApiKey, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: this.syncModel,
-          input: [
-            { type: "video", url: videoUrl },
-            {
-              type: "text",
-              provider: {
-                name: "elevenlabs",
-                voiceId: input.voiceId,
-                script: input.script,
-                stability: vs?.stability ?? 0.5,
-                similarityBoost: vs?.similarity_boost ?? 0.75,
-              },
-            },
-          ],
-        }),
+        body: JSON.stringify({ model: this.syncModel, input: [{ type: "video", url: videoUrl }, audioInput] }),
       });
       if (!res.ok) throw new Error(`Sync generate ${res.status}: ${await res.text()}`);
       return (await res.json()) as { id: string; status: string };

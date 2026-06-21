@@ -94,7 +94,13 @@ export const appConfigSchema = z.object({
           falModel: z.string().default("fal-ai/veo3.1/reference-to-video"),
           stsModel: z.string().default("eleven_multilingual_sts_v2"),
           /** Modelo de lip-sync de Sync (provider="sync"): lipsync-2, lipsync-2-pro, sync-3… */
-          syncModel: z.string().default("lipsync-2"),
+          syncModel: z.string().default("sync-3"),
+          /**
+           * Velocidad de la voz (provider="sync"). 1 = TTS integrado de Sync (sin control de speed).
+           * Si ≠ 1, generamos el TTS con ElevenLabs (que sí tiene speed, 0.7–1.2) y se lo pasamos a
+           * Sync como audio. Por encima de 1.2 ElevenLabs no sube más.
+           */
+          ttsSpeed: z.number().min(0.7).max(1.2).default(1.1),
           /** Resolución de HeyGen Shots (provider="heygen-shot"): 720p (más barato) o 1080p. */
           shotResolution: z.enum(["720p", "1080p"]).default("720p"),
         })

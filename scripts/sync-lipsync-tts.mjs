@@ -6,8 +6,10 @@ import { basename } from "node:path";
 
 const KEY = process.env.SYNC_API_KEY;
 if (!KEY) throw new Error("Falta SYNC_API_KEY (.env)");
+const ELEVEN = process.env.ELEVENLABS_API_KEY;
 const API = "https://api.sync.so";
-const [, , runId, sceneArg, model = "lipsync-2", source = "raw"] = process.argv;
+const [, , runId, sceneArg, model = "lipsync-2", source = "raw", speedArg = "1"] = process.argv;
+const ttsSpeed = parseFloat(speedArg);
 if (!runId || !sceneArg) throw new Error("Uso: node scripts/sync-lipsync-tts.mjs <runId> <sceneNN> [model] [raw|final]");
 const nn = String(sceneArg).padStart(2, "0");
 const V = `output/${runId}/videos`;
@@ -45,14 +47,25 @@ async function upload(path, contentType) {
 console.log("Subiendo vídeo...");
 const videoUrl = await upload(videoFile, "video/mp4");
 
-console.log(`Creando generación (model=${model}, TTS ElevenLabs)...`);
-const body = {
-  model,
-  input: [
-    { type: "video", url: videoUrl },
-    { type: "text", provider: { name: "elevenlabs", voiceId, script, stability: params.stability ?? 0.5, similarityBoost: params.similarity_boost ?? 0.75 } },
-  ],
-};
+// Audio: con ttsSpeed != 1 generamos el TTS con ElevenLabs (que sí tiene speed) y lo pasamos como audio.
+let audioInput;
+if (ttsSpeed !== 1) {
+  if (!ELEVEN) throw new Error("Falta ELEVENLABS_API_KEY para TTS con speed");
+  console.log(`TTS propio ElevenLabs (speed=${ttsSpeed})...`);
+  const r = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(voiceId)}?output_format=mp3_44100_128`, {
+    method: "POST", headers: { "xi-api-key": ELEVEN, "Content-Type": "application/json" },
+    body: JSON.stringify({ text: script, model_id: "eleven_multilingual_v2", voice_settings: { stability: params.stability ?? 0.5, similarity_boost: params.similarity_boost ?? 0.75, style: params.style ?? 0, use_speaker_boost: params.speaker_boost ?? true, speed: ttsSpeed } }),
+  });
+  if (!r.ok) throw new Error(`ElevenLabs TTS ${r.status}: ${await r.text()}`);
+  const { writeFileSync: wf } = await import("node:fs");
+  const ap = "/tmp/sync-tts-voice.mp3"; wf(ap, Buffer.from(await r.arrayBuffer()));
+  const audioUrl = await upload(ap, "audio/mpeg");
+  audioInput = { type: "audio", url: audioUrl };
+} else {
+  audioInput = { type: "text", provider: { name: "elevenlabs", voiceId, script, stability: params.stability ?? 0.5, similarityBoost: params.similarity_boost ?? 0.75 } };
+}
+console.log(`Creando generación (model=${model}, ttsSpeed=${ttsSpeed})...`);
+const body = { model, input: [{ type: "video", url: videoUrl }, audioInput] };
 const genRes = await fetch(`${API}/v2/generate`, {
   method: "POST",
   headers: { "x-api-key": KEY, "Content-Type": "application/json" },
@@ -74,7 +87,8 @@ while (!["COMPLETED", "FAILED", "REJECTED"].includes(status)) {
 }
 if (status !== "COMPLETED") throw new Error(`Sync terminó en ${status}: ${JSON.stringify(data.error ?? data.errorCode ?? data)}`);
 
-const out = `${V}/scene-${nn}.sync-tts.mp4`;
+const spd = ttsSpeed !== 1 ? `-spd${String(ttsSpeed).replace(".", "")}` : "";
+const out = `${V}/scene-${nn}.${model}${spd}.mp4`;
 writeFileSync(out, Buffer.from(await (await fetch(data.outputUrl)).arrayBuffer()));
 console.log(`\n✅ Guardado: ${out}  (dur: ${data.outputDuration ?? "?"}s)`);
 if (data.synthesizedAudioUrl) console.log(`   synthesizedAudioUrl: ${data.synthesizedAudioUrl.slice(0, 80)}...`);
