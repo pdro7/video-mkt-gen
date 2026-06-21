@@ -76,6 +76,8 @@ export const appConfigSchema = z.object({
       aspectRatio: z.string().default("16:9"),
       resolution: z.enum(["720p", "1080p", "4k"]).default("1080p"),
       useAvatarIV: z.boolean().default(true),
+      /** Mejora/limpieza de audio del vídeo final en `assemble` (highpass + loudnorm + presencia). */
+      cleanAudio: z.boolean().default(true),
       /** Energía/rango de movimiento de Avatar IV. "low" sale rígido; por defecto "high". */
       defaultExpressiveness: z.enum(["high", "medium", "low"]).default("high"),
       /** Motor para escenas dinámicas (avatar en movimiento): Veo + voice changer. */

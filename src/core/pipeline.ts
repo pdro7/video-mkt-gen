@@ -351,7 +351,7 @@ export class Pipeline {
     const [width, height] = resolutionDims(this.config.video.resolution);
     const outPath = join(this.workspace.root, `${slugify(this.config.client)}-final-${this.config.video.resolution}.mp4`);
     log.info(`Montando ${clips.length} escenas en ${width}x${height} -> ${outPath}`);
-    await assembleFinalVideo({ clips, outPath, width, height });
+    await assembleFinalVideo({ clips, outPath, width, height, cleanAudio: this.config.video.cleanAudio });
     manifest.finalVideo = outPath;
     // Estimación de coste de generación (API): se cachea en el manifest y se escribe costs.md.
     const cost = computeRunCost(manifest, this.config);

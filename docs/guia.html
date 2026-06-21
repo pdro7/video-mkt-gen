@@ -328,6 +328,10 @@ npm run dev -- revise --run &lt;runId&gt; --scene 4 --zone ZONE_9</code></pre>
   videos/              scene-XX.mp4  (un clip por escena)</code></pre>
   <p>El <b>corte final 1080p</b> se arma normalizando y concatenando los clips (las dinámicas de Veo
   salen en 720p y se escalan a 1920×1080).</p>
+  <div class="ok"><b>Mejora/limpieza de audio (<code>video.cleanAudio</code>, default true):</b> al final del
+  <code>assemble</code> se aplica una pasada de audio al vídeo completo — <b>highpass 70 Hz</b> (quita retumbe),
+  <b>loudnorm −16 LUFS</b> (normaliza el volumen al estándar de streaming) y <b>+2 dB a 3.5 kHz</b> (voz más
+  presente). Solo re-encoda el audio (vídeo intacto). Suelto: <code>scripts/clean-audio.mjs &lt;in&gt; [out]</code>.</div>
 </section>
 
 <hr>

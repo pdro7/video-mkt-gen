@@ -16,14 +16,19 @@ export interface AssembleInput {
   width: number;
   height: number;
   fps?: number;
+  /** Si true, aplica mejora/limpieza de audio al final (highpass + loudnorm + presencia). */
+  cleanAudio?: boolean;
 }
+
+/** Cadena de filtros de mejora/limpieza de audio (ver scripts/clean-audio.mjs). */
+const CLEAN_AUDIO_AF = "highpass=f=70,loudnorm=I=-16:TP=-1.5:LRA=11,equalizer=f=3500:t=q:w=1.2:g=2";
 
 /**
  * Une los clips de escena en un solo mp4. Como vienen de fuentes distintas (HeyGen 1080p,
  * Veo/fal ~720p), primero NORMALIZA cada uno a la misma resolución/fps/SAR/audio y luego
  * concatena por demuxer (copia directa, sin re-encode del concat). Requiere ffmpeg en el PATH.
  */
-export async function assembleFinalVideo({ clips, outPath, width, height, fps = 25 }: AssembleInput): Promise<void> {
+export async function assembleFinalVideo({ clips, outPath, width, height, fps = 25, cleanAudio = false }: AssembleInput): Promise<void> {
   if (clips.length === 0) throw new Error("No hay clips para montar.");
   const tmp = mkdtempSync(join(tmpdir(), "assemble-"));
   const vf =
@@ -45,10 +50,21 @@ export async function assembleFinalVideo({ clips, outPath, width, height, fps = 
 
   const listPath = join(tmp, "list.txt");
   writeFileSync(listPath, listLines.join("\n") + "\n", "utf8");
+  // Concat por demuxer (copia directa). Si hay limpieza de audio, va a un temporal y se re-encoda el audio.
+  const concatOut = cleanAudio ? join(tmp, "concat.mp4") : outPath;
   await run("ffmpeg", [
     "-y", "-v", "error", "-f", "concat", "-safe", "0", "-i", listPath,
-    "-c", "copy", "-movflags", "+faststart", outPath,
+    "-c", "copy", "-movflags", "+faststart", concatOut,
   ]);
+  if (cleanAudio) {
+    await run("ffmpeg", [
+      "-nostdin", "-y", "-v", "error", "-i", concatOut,
+      "-c:v", "copy", "-af", CLEAN_AUDIO_AF,
+      "-c:a", "aac", "-b:a", "192k", "-ar", "48000", "-ac", "2",
+      "-movflags", "+faststart", outPath,
+    ]);
+    log.info(`Audio final mejorado (highpass + loudnorm + presencia).`);
+  }
   log.info(`Video final montado (${clips.length} escenas) -> ${outPath}`);
 }
 
