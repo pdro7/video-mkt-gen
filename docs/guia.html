@@ -1045,6 +1045,18 @@ ffmpeg -i final.mp4 -i fast.wav -filter:v "setpts=PTS/1.5" \
   tiene <code>speed</code>, rango <b>0,7–1,2</b>) y se lo pasamos a Sync como <b>audio</b>. Así se acelera la voz
   <b>de forma nativa, sin <code>atempo</code></b>. Por encima de 1,2 ElevenLabs no sube más. Default <b>1.1</b>
   (ágil sin que se note acelerado); el TTS además ya sale más denso que el STS (~6s vs ~8s por frase).</div>
+  <div class="ok"><b>Diccionario de pronunciación (<code>ttsPronunciation</code>):</b> nombres propios y siglas que el
+  TTS lee mal se corrigen con un <b>respelling</b> aplicado <b>solo al texto que va a ElevenLabs</b> (no al guion
+  visible ni al catálogo). Vive en <code>config.json</code> (<code>video.dynamic.ttsPronunciation</code>) y el
+  <code>SyncDynamicProvider</code> lo aplica automáticamente (palabra completa, insensible a may/min). Defaults:
+  <pre><code>"Fundae": "Fundáe", "BBVA": "BB UV A", "Ciberaula": "Ciber Aula"</code></pre>
+  Ej.: <code>Fundae</code>→"Fundee" ❌ ⇒ <code>Fundáe</code>→"fun-da-e" ✅. Es la misma familia de problema que
+  ChatGPT/Ciberaula; añade el token al diccionario cuando aparezca uno nuevo. <b>Estabilidad:</b> el default de
+  <code>stability</code> es <b>0.5</b> (más fiel; 0.33 era más expresivo pero alucinaba más palabras).</div>
+  <div class="note"><b>Flujo de corrección (audio primero):</b> para validar pronunciación sin gastar en Sync,
+  generamos solo el <b>audio TTS</b> de la frase (gratis, solo ElevenLabs), se escucha, y al confirmar se lanza el
+  lip-sync con ese audio ya verificado (<code>scripts/sync-lipsync-audio.mjs</code>). Así Sync solo se paga una vez,
+  con el audio correcto.</div>
   <div class="note"><b>Cómo cambia el pipeline:</b> en el flujo <code>sync</code> desaparecen el <b>STS</b> y el mux de
   audio propio; Veo solo aporta el <b>visual</b> (su audio/voz/música se descartan, así que su mala pronunciación de
   siglas deja de importar — la voz la pone el TTS). <b>Coste:</b> sube (Veo ~$1.20 + Sync ~$0.97 con <code>sync-3</code>

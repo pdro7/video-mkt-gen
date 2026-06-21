@@ -101,6 +101,14 @@ export const appConfigSchema = z.object({
            * Sync como audio. Por encima de 1.2 ElevenLabs no sube más.
            */
           ttsSpeed: z.number().min(0.7).max(1.2).default(1.1),
+          /**
+           * Diccionario de pronunciación para el TTS (provider="sync"): nombres propios/siglas que el
+           * modelo lee mal → grafía que sí suena bien. Se aplica SOLO al texto que va a ElevenLabs
+           * (no al guion visible ni al catálogo). Coincidencia por palabra completa, insensible a may/min.
+           */
+          ttsPronunciation: z
+            .record(z.string())
+            .default({ Fundae: "Fundáe", BBVA: "BB UV A", Ciberaula: "Ciber Aula" }),
           /** Resolución de HeyGen Shots (provider="heygen-shot"): 720p (más barato) o 1080p. */
           shotResolution: z.enum(["720p", "1080p"]).default("720p"),
         })

@@ -19,6 +19,7 @@ export class SyncDynamicProvider extends FalDynamicVideoProvider {
   private syncApiKey: string;
   private syncModel: string;
   private ttsSpeed: number;
+  private ttsPronunciation: Record<string, string>;
   private readonly api = "https://api.sync.so";
   private readonly ttsModel = "eleven_multilingual_v2";
 
@@ -30,11 +31,26 @@ export class SyncDynamicProvider extends FalDynamicVideoProvider {
     syncApiKey: string;
     syncModel: string;
     ttsSpeed?: number;
+    ttsPronunciation?: Record<string, string>;
   }) {
     super(opts);
     this.syncApiKey = opts.syncApiKey;
     this.syncModel = opts.syncModel;
     this.ttsSpeed = opts.ttsSpeed ?? 1;
+    this.ttsPronunciation = opts.ttsPronunciation ?? {};
+  }
+
+  /**
+   * Aplica el diccionario de pronunciación SOLO al texto del TTS (no al guion visible).
+   * Reemplaza cada token por su grafía "fonética" (palabra completa, insensible a may/min).
+   */
+  private respell(text: string): string {
+    let out = text;
+    for (const [from, to] of Object.entries(this.ttsPronunciation)) {
+      const esc = from.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      out = out.replace(new RegExp(`\\b${esc}\\b`, "gi"), to);
+    }
+    return out;
   }
 
   /**
@@ -108,10 +124,11 @@ export class SyncDynamicProvider extends FalDynamicVideoProvider {
     // 3) Audio: si ttsSpeed != 1, generamos el TTS con ElevenLabs (con speed) y lo pasamos como audio;
     //    si no, dejamos que Sync haga el TTS integrado (type "text").
     const vs = input.voiceSettings;
+    const ttsScript = this.respell(input.script); // respelling de nombres propios solo para el TTS
     let audioInput: Record<string, unknown>;
     if (this.ttsSpeed !== 1) {
       log.info(`TTS propio (ElevenLabs, speed=${this.ttsSpeed})...`);
-      const audioBuf = await this.elevenTts(input.script, input.voiceId, vs);
+      const audioBuf = await this.elevenTts(ttsScript, input.voiceId, vs);
       const audioPath = join(tmp, "voice.mp3");
       writeFileSync(audioPath, audioBuf);
       const audioUrl = await this.upload(audioPath, "audio/mpeg");
@@ -122,7 +139,7 @@ export class SyncDynamicProvider extends FalDynamicVideoProvider {
         provider: {
           name: "elevenlabs",
           voiceId: input.voiceId,
-          script: input.script,
+          script: ttsScript,
           stability: vs?.stability ?? 0.5,
           similarityBoost: vs?.similarity_boost ?? 0.75,
         },

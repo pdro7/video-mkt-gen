@@ -8,7 +8,7 @@ const KEY = process.env.SYNC_API_KEY;
 if (!KEY) throw new Error("Falta SYNC_API_KEY (.env)");
 const ELEVEN = process.env.ELEVENLABS_API_KEY;
 const API = "https://api.sync.so";
-const [, , runId, sceneArg, model = "lipsync-2", source = "raw", speedArg = "1"] = process.argv;
+const [, , runId, sceneArg, model = "lipsync-2", source = "raw", speedArg = "1", stabilityArg] = process.argv;
 const ttsSpeed = parseFloat(speedArg);
 if (!runId || !sceneArg) throw new Error("Uso: node scripts/sync-lipsync-tts.mjs <runId> <sceneNN> [model] [raw|final]");
 const nn = String(sceneArg).padStart(2, "0");
@@ -54,7 +54,7 @@ if (ttsSpeed !== 1) {
   console.log(`TTS propio ElevenLabs (speed=${ttsSpeed})...`);
   const r = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(voiceId)}?output_format=mp3_44100_128`, {
     method: "POST", headers: { "xi-api-key": ELEVEN, "Content-Type": "application/json" },
-    body: JSON.stringify({ text: script, model_id: "eleven_multilingual_v2", voice_settings: { stability: params.stability ?? 0.5, similarity_boost: params.similarity_boost ?? 0.75, style: params.style ?? 0, use_speaker_boost: params.speaker_boost ?? true, speed: ttsSpeed } }),
+    body: JSON.stringify({ text: script, model_id: "eleven_multilingual_v2", voice_settings: { stability: stabilityArg != null ? parseFloat(stabilityArg) : (params.stability ?? 0.5), similarity_boost: params.similarity_boost ?? 0.75, style: params.style ?? 0, use_speaker_boost: params.speaker_boost ?? true, speed: ttsSpeed } }),
   });
   if (!r.ok) throw new Error(`ElevenLabs TTS ${r.status}: ${await r.text()}`);
   const { writeFileSync: wf } = await import("node:fs");
