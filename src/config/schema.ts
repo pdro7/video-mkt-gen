@@ -100,7 +100,7 @@ export const appConfigSchema = z.object({
            * Si ≠ 1, generamos el TTS con ElevenLabs (que sí tiene speed, 0.7–1.2) y se lo pasamos a
            * Sync como audio. Por encima de 1.2 ElevenLabs no sube más.
            */
-          ttsSpeed: z.number().min(0.7).max(1.2).default(1.1),
+          ttsSpeed: z.number().min(0.7).max(1.2).default(1.15),
           /**
            * Diccionario de pronunciación para el TTS (provider="sync"): nombres propios/siglas que el
            * modelo lee mal → grafía que sí suena bien. Se aplica SOLO al texto que va a ElevenLabs
@@ -109,6 +109,11 @@ export const appConfigSchema = z.object({
           ttsPronunciation: z
             .record(z.string())
             .default({ Fundae: "Fundáe", BBVA: "BB UV A", Ciberaula: "Ciber Aula" }),
+          /**
+           * Normaliza ":" → "," en el texto del TTS (los dos puntos meten una pausa más larga que la
+           * coma). Solo afecta al audio, no al guion visible. Default true.
+           */
+          ttsColonToComma: z.boolean().default(true),
           /** Resolución de HeyGen Shots (provider="heygen-shot"): 720p (más barato) o 1080p. */
           shotResolution: z.enum(["720p", "1080p"]).default("720p"),
         })

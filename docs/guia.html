@@ -1037,13 +1037,13 @@ ffmpeg -i final.mp4 -i fast.wav -filter:v "setpts=PTS/1.5" \
   <code>video.dynamic.provider = "sync"</code> es el motor dinámico por defecto. Flujo:
   <b>Veo i2v (visual, cara hablando) → Sync: TTS ElevenLabs + lip-sync → <code>scene-NN.mp4</code></b>.
   <b>No usa el voice-changer (STS).</b> Defaults: <code>syncModel = "sync-3"</code> (máxima naturalidad de boca) y
-  <code>ttsSpeed = 1.1</code>. Credenciales: <code>FAL_KEY</code> (visual Veo) + <code>SYNC_API_KEY</code> (lip-sync) +
+  <code>ttsSpeed = 1.15</code>. Credenciales: <code>FAL_KEY</code> (visual Veo) + <code>SYNC_API_KEY</code> (lip-sync) +
   <code>ELEVENLABS_API_KEY</code> (TTS con speed). El STS sigue disponible cambiando <code>provider</code> a
   <code>fal</code>/<code>gemini</code>.</div>
   <div class="ok"><b>Control de velocidad de la voz (<code>ttsSpeed</code>):</b> el TTS integrado de Sync NO expone
   <code>speed</code>. Por eso, si <code>ttsSpeed ≠ 1</code>, generamos el TTS con la API de <b>ElevenLabs</b> (que sí
   tiene <code>speed</code>, rango <b>0,7–1,2</b>) y se lo pasamos a Sync como <b>audio</b>. Así se acelera la voz
-  <b>de forma nativa, sin <code>atempo</code></b>. Por encima de 1,2 ElevenLabs no sube más. Default <b>1.1</b>
+  <b>de forma nativa, sin <code>atempo</code></b>. Por encima de 1,2 ElevenLabs no sube más. Default <b>1.15</b>
   (ágil sin que se note acelerado); el TTS además ya sale más denso que el STS (~6s vs ~8s por frase).</div>
   <div class="ok"><b>Diccionario de pronunciación (<code>ttsPronunciation</code>):</b> nombres propios y siglas que el
   TTS lee mal se corrigen con un <b>respelling</b> aplicado <b>solo al texto que va a ElevenLabs</b> (no al guion
@@ -1052,7 +1052,9 @@ ffmpeg -i final.mp4 -i fast.wav -filter:v "setpts=PTS/1.5" \
   <pre><code>"Fundae": "Fundáe", "BBVA": "BB UV A", "Ciberaula": "Ciber Aula"</code></pre>
   Ej.: <code>Fundae</code>→"Fundee" ❌ ⇒ <code>Fundáe</code>→"fun-da-e" ✅. Es la misma familia de problema que
   ChatGPT/Ciberaula; añade el token al diccionario cuando aparezca uno nuevo. <b>Estabilidad:</b> el default de
-  <code>stability</code> es <b>0.5</b> (más fiel; 0.33 era más expresivo pero alucinaba más palabras).</div>
+  <code>stability</code> es <b>0.5</b> (más fiel; 0.33 era más expresivo pero alucinaba más palabras).
+  <b>Puntuación:</b> <code>ttsColonToComma</code> (default true) convierte <code>":"</code>→<code>","</code> en el
+  texto del TTS, porque los dos puntos meten una pausa más larga que la coma (solo afecta al audio).</div>
   <div class="note"><b>Flujo de corrección (audio primero):</b> para validar pronunciación sin gastar en Sync,
   generamos solo el <b>audio TTS</b> de la frase (gratis, solo ElevenLabs), se escucha, y al confirmar se lanza el
   lip-sync con ese audio ya verificado (<code>scripts/sync-lipsync-audio.mjs</code>). Así Sync solo se paga una vez,

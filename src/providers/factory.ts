@@ -58,6 +58,7 @@ function createDynamic(config: AppConfig, creds: Credentials): DynamicProvider |
       syncModel: dyn.syncModel,
       ttsSpeed: dyn.ttsSpeed,
       ttsPronunciation: dyn.ttsPronunciation,
+      ttsColonToComma: dyn.ttsColonToComma,
     });
   }
   // Veo (gemini/fal): el voice changer (ElevenLabs) es común.

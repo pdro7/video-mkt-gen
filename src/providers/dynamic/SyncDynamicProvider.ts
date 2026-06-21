@@ -20,6 +20,7 @@ export class SyncDynamicProvider extends FalDynamicVideoProvider {
   private syncModel: string;
   private ttsSpeed: number;
   private ttsPronunciation: Record<string, string>;
+  private ttsColonToComma: boolean;
   private readonly api = "https://api.sync.so";
   private readonly ttsModel = "eleven_multilingual_v2";
 
@@ -32,17 +33,19 @@ export class SyncDynamicProvider extends FalDynamicVideoProvider {
     syncModel: string;
     ttsSpeed?: number;
     ttsPronunciation?: Record<string, string>;
+    ttsColonToComma?: boolean;
   }) {
     super(opts);
     this.syncApiKey = opts.syncApiKey;
     this.syncModel = opts.syncModel;
     this.ttsSpeed = opts.ttsSpeed ?? 1;
     this.ttsPronunciation = opts.ttsPronunciation ?? {};
+    this.ttsColonToComma = opts.ttsColonToComma ?? false;
   }
 
   /**
-   * Aplica el diccionario de pronunciación SOLO al texto del TTS (no al guion visible).
-   * Reemplaza cada token por su grafía "fonética" (palabra completa, insensible a may/min).
+   * Normaliza el texto SOLO para el TTS (no el guion visible): aplica el diccionario de pronunciación
+   * (palabra completa, insensible a may/min) y, si está activo, convierte ":" → "," (pausa más corta).
    */
   private respell(text: string): string {
     let out = text;
@@ -50,6 +53,7 @@ export class SyncDynamicProvider extends FalDynamicVideoProvider {
       const esc = from.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
       out = out.replace(new RegExp(`\\b${esc}\\b`, "gi"), to);
     }
+    if (this.ttsColonToComma) out = out.replace(/:/g, ",");
     return out;
   }
 
